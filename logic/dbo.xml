@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<Secciones>
+
+  <generic>
+  
+    <ObtenerUI>
+      <campo leyenda="Proyecto" db_nombre="proyecto" form_nombre="proyecto" requerido="true" charsize="0" tipo="int"/>
+      <sql>
+        <![CDATA[
+			SELECT TUI.descripcion tipoUI,TUI.class, UI.orden, TUI.innerHTML,TUI.css, TUI.javascript
+			FROM META_UnidadesUI UI 
+				LEFT OUTER JOIN META_TiposUnidadUI TUI ON UI.tipoUnidadUI=TUI.indice
+			ORDER BY orden ASC
+          ]]>
+      </sql>
+    </ObtenerUI>
+
+  </generic>
+   
+</Secciones>

@@ -9,7 +9,139 @@ CREATE TABLE SEG_Personas(
 	rfc NVARCHAR(10),
 	curp NVARCHAR(20)
 )
+	CREATE DATABASE _ROOT_SYSTEM; 
+USE _ROOT_SYSTEM;
+
+CREATE TABLE SEG_Personas(
+	indice INT PRIMARY KEY,
+	fecha DATETIME,
+	nombre NVARCHAR(200),
+	fecha_nacimiento DATE,
+	rfc NVARCHAR(10),
+	curp NVARCHAR(20)
+)
 	
+CREATE TABLE COM_Proyectos(
+	indice INT PRIMARY KEY,
+	fecha DATETIME,
+	descripcion NVARCHAR(300),
+	activo INT
+)
+
+CREATE TABLE SEG_PerfilUsuarios(	
+	indice INT IDENTITY PRIMARY KEY,
+	fecha DATETIME,
+	descripcion NVARCHAR(300),
+	persona INT REFERENCES SEG_Personas(indice),
+	proyecto INT REFERENCES COM_Proyectos(indice)
+)
+
+CREATE TABLE SEG_LOG_(
+	indice INT IDENTITY PRIMARY KEY,
+	fecha DATETIME,
+	descripcion NVARCHAR(300),
+	perfil_usuario INT REFERENCES SEG_PerfilUsuarios(indice)
+)
+
+CREATE TABLE GEN_Archivos(
+	indice INT IDENTITY PRIMARY KEY,
+	url_ NVARCHAR(350),
+	fecha DATETIME
+)
+
+CREATE TABLE META_TiposUnidadUI(--Se convierte en una especificacion de clase de Objeto UI.
+	indice INT PRIMARY KEY,
+	descripcion NVARCHAR(200),
+	css NVARCHAR(MAX),
+	class NVARCHAR(50),--Por defecto le da funcionalidad básica de acuerdo con lo ya existente en boostrap por ejemplo.
+	atributos NVARCHAR(500),
+	metodos text--Aquí se colocan los metodos de la clase de objeto UI;
+)
+ALTER TABLE META_TiposUnidadUI ALTER COLUMN innerHTML NVARCHAR(4000);
+ALTER TABLE META_TiposUnidadUI ADD javascript NVARCHAR(MAX);
+
+CREATE TABLE META_Componentes(
+	indice INT PRIMARY KEY,
+	fecha DATETIME,
+	descripcion NVARCHAR(300),
+	titulo NVARCHAR(300),
+	tooltip NVARCHAR(300),
+	layout INT REFERENCES META_TiposUnidadUI(indice)
+)
+
+CREATE TABLE META_UnidadesUI(--Que unidad ui existe en el componente
+	indice INT PRIMARY KEY,
+	componente INT REFERENCES META_Componentes(indice),
+	tipoUnidadUI INT REFERENCES META_TiposUnidadUI(indice),
+	orden NVARCHAR(50)
+)
+
+CREATE TABLE META_Navegacion(
+	indice INT PRIMARY KEY,
+	proyecto INT REFERENCES COM_Proyectos(indice),
+	descripcion NVARCHAR(200),
+	nav_padre INT NULL REFERENCES META_Navegacion(indice),
+	icon INT REFERENCES GEN_Archivos(indice),
+	pantalla INT REFERENCES META_Componentes(indice)
+)
+
+CREATE TABLE META_PropiedadesTiposUnidadesUI(-- que propiedades tienen los tipos de unidades ui
+	indice INT IDENTITY PRIMARY KEY,
+	tipoUnidadUI INT REFERENCES META_TiposUnidadUI(indice),
+	descripcion NVARCHAR(200),
+	css NVARCHAR(300),
+	class NVARCHAR(100)
+)
+
+
+CREATE TABLE META_MetodosSP(
+	indice INT PRIMARY KEY,
+	query NVARCHAR(MAX),
+	privado BIT,
+	perfil_usuario INT REFERENCES SEG_PerfilUsuarios(indice),
+	email_adjunto_url NVARCHAR(100),
+	email_adjunto_params NVARCHAR(200)	
+)
+
+CREATE TABLE META_ParametrosSP(
+	indice INT PRIMARY KEY,
+	nombre NVARCHAR(50),
+	var_sp NVARCHAR(50),
+	obligatorio NVARCHAR(50),
+	size SMALLINT,
+	alias NVARCHAR(80),
+	tipo NVARCHAR(20)
+)
+
+
+CREATE TABLE META_Entidades(
+	indice INT PRIMARY KEY,
+	descripcion NVARCHAR(50)
+)
+
+CREATE TABLE META_CamposEntidad(
+	indice INT PRIMARY KEY,
+	nombre NVARCHAR(50),
+	var_sp NVARCHAR(50),
+	obligatorio NVARCHAR(50),
+	size SMALLINT,
+	alias NVARCHAR(80),
+	tipo NVARCHAR(20),
+	referencia NVARCHAR(150),
+	oculto BIT
+)
+
+ALTER TABLE COM_Proyectos ADD password_ NVARCHAR(20)
+ALTER TABLE COM_Proyectos ADD ui INT REFERENCES META_Componentes(indice);
+ALTER TABLE META_Componentes ADD proyecto INT REFERENCES COM_proyectos(indice);
+
+CREATE TABLE META_ValoresPropiedadesUnidadesUI(
+	indice INT IDENTITY PRIMARY KEY,
+	unidadUI INT REFERENCES META_UnidadesUI(indice),
+	propiedad INT REFERENCES META_PropiedadesTiposUnidadesUI(indice),
+	valor NVARCHAR(800)
+)
+
 CREATE TABLE COM_Proyectos(
 	indice INT PRIMARY KEY,
 	fecha DATETIME,
