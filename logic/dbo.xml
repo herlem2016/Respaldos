@@ -10,7 +10,29 @@
 			SELECT TUI.descripcion tipoUI,TUI.class, UI.orden, TUI.innerHTML,TUI.css, TUI.javascript
 			FROM META_UnidadesUI UI 
 				LEFT OUTER JOIN META_TiposUnidadUI TUI ON UI.tipoUnidadUI=TUI.indice
-			ORDER BY orden ASC
+			ORDER BY orden ASC			
+          ]]>
+      </sql>
+    </ObtenerUI>
+	
+	<CargarUnidadUI>
+      <campo leyenda="Unidad de Interfaz de usuario" db_nombre="unidadUI" form_nombre="unidadUI" requerido="true" charsize="0" tipo="int"/>
+      <sql>
+        <![CDATA[			
+			SELECT 
+				Q.indice,
+				R.innerHTML,
+				CONVERT(XML,(
+					SELECT  A.indice,
+							B.innerHTML,
+							dbo.AnidacionUI(A.indice) UnidadesUI 
+					FROM    META_UnidadesUI A INNER JOIN META_TiposUnidadUI B ON A.tipoUnidadUI=B.indice
+					WHERE   unidadUI_padre = Q.indice
+					FOR XML PATH('UnidadUI')
+				))   
+			FROM dbo.META_UnidadesUI Q INNER JOIN META_TiposUnidadUI R ON Q.tipoUnidadUI=R.indice
+			WHERE Q.indice=@unidadUI
+			FOR XML PATH ('ComponenteUI')
           ]]>
       </sql>
     </ObtenerUI>
