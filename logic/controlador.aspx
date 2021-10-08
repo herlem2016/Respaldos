@@ -33,6 +33,7 @@
                 case "IniciarSesion": IniciarSesion();break;
                 case "CerrarSesion": CerrarSesion();break;
                 case "EnviarNotificacion": EnviarNotificacion_HTTP();break;			
+                case "GenerarOperacionCX_DB": GenerarOperacionCX_DB();break;			
                 default:{
 						DataSet ds;
 					
@@ -45,6 +46,22 @@
             }
         }else {
             Response.Write("<mensaje>No se recibieron parametros op y sección.</mensaje>");
+        }
+    }
+
+    public GenerarOperacionCX_DB(op,seccion){
+        DataSet ds= GenerarOperacionCX("ObtenerParametrosPre","generic",null,true);
+        object [,] parametros;
+        if(ds!=null && ds.Tables.Count > 0 && ds.Tables[0].Rows>0){
+            if(ds.Tables.Count>1 && ds.Tables[1].Rows>0){
+                parametros= new object[ds.Tables[1].Rows.Count,6];
+                for(int i=0; i<ds.Tables[1].Row[i]; i++){
+                    parametros[i]={ds.Tables[1].Row[i]["leyenda"],ds.Tables[1].Row[i]["sparametro"],Request[ds.Tables[1].Row[i]["sparametro"].To_String()],bool.Parse(ds.Tables[1].Row[i]["requerido"].ToString()),Int32.Parse(ds.Tables[1].Row[i]["longitud"].ToString())};
+                }
+            }
+            ds=oModelo.GenerarOperacionCX("place", "generic", parametros,true,ds.Tables[0].Rows[0]["query"].ToString());
+            Notificar(ds);														
+			ds.WriteXml(Response.OutputStream);
         }
     }
 	
