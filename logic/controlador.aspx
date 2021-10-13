@@ -49,17 +49,22 @@
         }
     }
 
-    public GenerarOperacionCX_DB(op,seccion){
-        DataSet ds= GenerarOperacionCX("ObtenerParametrosPre","generic",null,true);
-        object [,] parametros;
-        if(ds!=null && ds.Tables.Count > 0 && ds.Tables[0].Rows>0){
-            if(ds.Tables.Count>1 && ds.Tables[1].Rows>0){
+    public void GenerarOperacionCX_DB(){
+        DataSet ds= oModelo.GenerarOperacionCX("ObtenerParametrosPre","generic",null,true);
+        object [,] parametros= null;
+        if(ds!=null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0){
+            if(ds.Tables.Count > 1 && ds.Tables[1].Rows.Count > 0){
                 parametros= new object[ds.Tables[1].Rows.Count,6];
-                for(int i=0; i<ds.Tables[1].Row[i]; i++){
-                    parametros[i]={ds.Tables[1].Row[i]["leyenda"],ds.Tables[1].Row[i]["sparametro"],Request[ds.Tables[1].Row[i]["sparametro"].To_String()],bool.Parse(ds.Tables[1].Row[i]["requerido"].ToString()),Int32.Parse(ds.Tables[1].Row[i]["longitud"].ToString())};
+                for(int i=0; i<ds.Tables[1].Rows.Count; i++){
+                    parametros[i,0]=ds.Tables[1].Rows[i]["leyenda"];
+                    parametros[i,1]=ds.Tables[1].Rows[i]["nombre"];
+                    parametros[i,2]=Request[ds.Tables[1].Rows[i]["nombre"].ToString()];
+                    parametros[i,3]=bool.Parse(ds.Tables[1].Rows[i]["requerido"].ToString());
+                    parametros[i,4]=ds.Tables[1].Rows[i]["tipo"].ToString();
+                    parametros[i,5]=Int32.Parse(ds.Tables[1].Rows[i]["longitud"].ToString());
                 }
             }
-            ds=oModelo.GenerarOperacionCX("place", "generic", parametros,true,ds.Tables[0].Rows[0]["query"].ToString());
+            ds=oModelo.GenerarOperacionCX("place", "generic", parametros,true,ds.Tables[0].Rows[0]["sql_query"].ToString());
             Notificar(ds);														
 			ds.WriteXml(Response.OutputStream);
         }

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="iso-8859-1" ?>
 <Secciones>
-
   <generic>
   
     <ObtenerUI>
@@ -15,28 +14,68 @@
       </sql>
     </ObtenerUI>
 	
-	<CargarUnidadUI>
-      <campo leyenda="Unidad de Interfaz de usuario" db_nombre="unidadUI" form_nombre="unidadUI" requerido="true" charsize="0" tipo="int"/>
-      <sql>
-        <![CDATA[			
-			SELECT 
-				Q.indice,
-				R.innerHTML,
-				CONVERT(XML,(
-					SELECT  A.indice,
-							B.innerHTML,
-							dbo.AnidacionUI(A.indice) UnidadesUI 
-					FROM    META_UnidadesUI A INNER JOIN META_TiposUnidadUI B ON A.tipoUnidadUI=B.indice
-					WHERE   unidadUI_padre = Q.indice
-					FOR XML PATH('UnidadUI')
-				))   
-			FROM dbo.META_UnidadesUI Q INNER JOIN META_TiposUnidadUI R ON Q.tipoUnidadUI=R.indice
-			WHERE Q.indice=@unidadUI
-			FOR XML PATH ('ComponenteUI')
-          ]]>
-      </sql>
-    </ObtenerUI>
+	<ObtenerNavegacionUI>
+		<campo leyenda="Unidad de Interfaz de usuario" db_nombre="unidadUI" form_nombre="unidadUI" requerido="true" charsize="0" tipo="int"/>
+		<sql>
+			<![CDATA[			
+				SELECT 
+					Q.indice,
+					R.innerHTML,
+					CONVERT(XML,(
+						SELECT  A.indice,
+								B.innerHTML,
+								dbo.AnidacionUI(A.indice) UnidadesUI
+						FROM    META_UnidadesUI A INNER JOIN META_TiposUnidadUI B ON A.tipoUnidadUI=B.indice
+						WHERE   unidadUI_padre = Q.indice
+						FOR XML PATH('UnidadUI')
+					))   
+				FROM dbo.META_UnidadesUI Q INNER JOIN META_TiposUnidadUI R ON Q.tipoUnidadUI=R.indice
+				WHERE Q.indice=@unidadUI
+				FOR XML PATH ('ComponenteUI')
+			  ]]>
+		</sql>
+    </ObtenerNavegacionUI>
+	
+	
+	<ObtenerParametrosPre>
+		<campo leyenda="Clave de operación" db_nombre="opx" form_nombre="opx" requerido="true" charsize="0" tipo="int"/>
+		<sql>
+			<![CDATA[			
+				SELECT sql_query FROM OP_OperacionesCX WHERE indice=@opx;	
+				SELECT leyenda,nombre,nombre_db,requerido,tipo,longitud FROM [dbo].[OP_OperacionesCX_Parametros] WHERE operacioncx=@opx;		
+			  ]]>
+		</sql>
+    </ObtenerParametrosPre>
+	
+	<place>
+		<sql>
+			<![CDATA[			
+					
+			  ]]>
+		</sql>
+	</place>
 
-  </generic>
-   
+	<ObtenerValoresUI>
+		<campo leyenda="Unidad de Interfaz de usuario" db_nombre="unidadUI" form_nombre="unidadUI" requerido="true" charsize="0" tipo="int"/>
+		<sql>
+			<![CDATA[			
+				SELECT 
+					Q.indice,
+					R.innerHTML,
+					CONVERT(XML,(
+						SELECT  A.indice,
+								B.innerHTML,
+								dbo.AnidacionUI(A.indice) UnidadesUI
+						FROM    META_UnidadesUI A INNER JOIN META_TiposUnidadUI B ON A.tipoUnidadUI=B.indice
+						WHERE   unidadUI_padre = Q.indice
+						FOR XML PATH('UnidadUI')
+					))   
+				FROM dbo.META_UnidadesUI Q INNER JOIN META_TiposUnidadUI R ON Q.tipoUnidadUI=R.indice
+				WHERE Q.indice=@unidadUI
+				FOR XML PATH ('ComponenteUI')
+			  ]]>
+		</sql>
+    </ObtenerValoresUI>
+	
+  </generic>   
 </Secciones>

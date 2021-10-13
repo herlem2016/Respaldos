@@ -291,3 +291,42 @@ CREATE TABLE META_CamposEntidad(
 	referencia NVARCHAR(150),
 	oculto BIT
 )
+
+
+SELECT 
+    Q.indice,
+	R.innerHTML,
+    CONVERT(XML,(SELECT  A.indice,
+				B.innerHTML,
+                dbo.AnidacionUI(A.indice) UnidadesUI 
+        FROM    META_UnidadesUI A INNER JOIN META_TiposUnidadUI B ON A.tipoUnidadUI=B.indice
+        WHERE   unidadUI_padre = Q.indice
+        FOR XML PATH('UnidadUI')))   
+FROM dbo.META_UnidadesUI Q INNER JOIN META_TiposUnidadUI R ON Q.tipoUnidadUI=R.indice
+WHERE Q.indice=5
+FOR XML PATH ('ComponenteUI')
+
+
+CREATE TABLE OP_OperacionesCX(
+	indice INT PRIMARY KEY,
+	nombre NVARCHAR(300),
+	sql_query TEXT,
+	documentacion NVARCHAR(1000),
+	publico BIT,
+	seg_perfil INT--REFERENCES SEG_PerfilUsuarios
+)
+
+CREATE TABLE OP_OperacionesCX_Parametros(
+	indice INT PRIMARY KEY,
+	operacioncx INT REFERENCES OP_OperacionesCX(indice),
+	leyenda NVARCHAR(100),
+	nombre NVARCHAR(50),
+	nombre_db NVARCHAR(50),
+	requerido BIT,
+	tipo NVARCHAR(50),
+	longitud SMALLINT,
+	_default NVARCHAR(200)
+)
+
+ALTER TABLE [dbo].[OP_OperacionesCX] ADD UNIQUE(nombre);
+ALTER TABLE [dbo].[OP_OperacionesCX] ALTER COLUMN nombre NVARCHAR(100) NOT NULL;
