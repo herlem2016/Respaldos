@@ -330,3 +330,28 @@ CREATE TABLE OP_OperacionesCX_Parametros(
 
 ALTER TABLE [dbo].[OP_OperacionesCX] ADD UNIQUE(nombre);
 ALTER TABLE [dbo].[OP_OperacionesCX] ALTER COLUMN nombre NVARCHAR(100) NOT NULL;
+
+SELECT sql_query FROM OP_OperacionesCX
+
+CREATE TABLE META_Help(
+	indice INT IDENTITY PRIMARY KEY,
+	help_usuario TEXT,
+	help_admin TEXT,
+	help_develop TEXT
+)
+
+CREATE TABLE META_InstanciasUI(
+	indice INT PRIMARY KEY,
+	referencia NVARCHAR(200),
+	titulo NVARCHAR(200),
+	descripcion NVARCHAR(1000),
+	layout INT REFERENCES META_Layouts(indice),
+	help INT 
+)
+
+CREATE TABLE META_InstanciasUI_InfoUI(
+	indice INT PRIMARY KEY,
+	instanciaUI INT REFERENCES META_InstanciasUI(indice),
+	unidadUI INT REFERENCES META_unidadesUI(indice),
+	infoUI INT REFERENCES OP_OperacionesCX(indice)
+)

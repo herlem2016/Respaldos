@@ -36,7 +36,6 @@
 		</sql>
     </ObtenerNavegacionUI>
 	
-	
 	<ObtenerParametrosPre>
 		<campo leyenda="Clave de operación" db_nombre="opx" form_nombre="opx" requerido="true" charsize="0" tipo="int"/>
 		<sql>
@@ -46,6 +45,17 @@
 			  ]]>
 		</sql>
     </ObtenerParametrosPre>
+	
+	<ObtenerEstructuraTable>
+		<campo leyenda="Nombre de Objeto" db_nombre="sobject" form_nombre="sobject" requerido="true" charsize="100" tipo="string"/>
+		<sql>
+			<![CDATA[
+				SELECT column_name campo, data_type tipo, ISNULL(CHARACTER_MAXIMUM_LENGTH,0) longitud,CASE WHEN IS_NULLABLE='YES' THEN 0 ELSE 1 END requerido 
+				FROM INFORMATION_SCHEMA.COLUMNS 
+				WHERE TABLE_NAME=@sobject;		
+			  ]]>
+		</sql>
+    </ObtenerEstructuraTable>
 	
 	<place>
 		<sql>
