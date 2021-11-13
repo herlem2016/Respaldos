@@ -38,9 +38,13 @@
 						DataSet ds;
 					
 						ds=oModelo.GenerarOperacionCX(op, seccion, null, true);
+                        if(ds!=null && ds.Tables.Count>0 && ds.Tables[0].Rows.Count > 0 && ds.Tables[0].Columns.Contains("xmldoc")){
+                            Response.Write(ds.Tables[0].Rows[0]["xmldoc"]);
+                        }else{                            
+                            ds.WriteXml(Response.OutputStream);
+                        }
 						Notificar(ds);														
 					
-                        ds.WriteXml(Response.OutputStream);
                     }
                     break;
             }

@@ -6,10 +6,17 @@
       <campo leyenda="Proyecto" db_nombre="proyecto" form_nombre="proyecto" requerido="true" charsize="0" tipo="int"/>
       <sql>
         <![CDATA[
-			SELECT TUI.descripcion tipoUI,TUI.class, UI.orden, TUI.innerHTML,TUI.css, TUI.javascript
-			FROM META_UnidadesUI UI 
-				LEFT OUTER JOIN META_TiposUnidadUI TUI ON UI.tipoUnidadUI=TUI.indice
-			ORDER BY orden ASC			
+			DECLARE @XmlData XML;
+			SET @XmlData = (
+				SELECT UnidadUI.indice, UnidadUI.orden, tipoUnidadUI.descripcion,tipoUnidadUI.indice tipoUnidad, tipoUnidadUI.innerHTML,tipoUnidadUI.css,tipoUnidadUI.javascript, propiedad.descripcion, valor 
+				FROM META_UnidadesUI unidadUI 
+				INNER JOIN [META_TiposUnidadUI] tipoUnidadUI ON unidadUI.tipoUnidadUI=tipoUnidadUI.indice
+				LEFT OUTER JOIN META_PropiedadesTiposUnidadesUI propiedad ON tipoUnidadUI.indice=propiedad.tipoUnidadUI
+				LEFT OUTER JOIN META_ValoresPropiedadesUnidadesUI valor ON valor.propiedad=propiedad.indice
+				ORDER BY unidadUI.orden ASC
+				FOR XML AUTO, ROOT('ui')
+			);
+			SELECT @XmlData AS xmldoc;
           ]]>
       </sql>
     </ObtenerUI>
@@ -50,7 +57,7 @@
 		<campo leyenda="Nombre de Objeto" db_nombre="sobject" form_nombre="sobject" requerido="true" charsize="100" tipo="string"/>
 		<sql>
 			<![CDATA[
-				SELECT column_name campo, data_type tipo, ISNULL(CHARACTER_MAXIMUM_LENGTH,0) longitud,CASE WHEN IS_NULLABLE='YES' THEN 0 ELSE 1 END requerido 
+				SELECT column_name campo, data_type tipo, ISNULL(CHARACTER_MAXIMUM_LENGTH,0) longitud,CONVERT(BIT,CASE WHEN IS_NULLABLE='YES' THEN 0 ELSE 1 END) requerido 
 				FROM INFORMATION_SCHEMA.COLUMNS 
 				WHERE TABLE_NAME=@sobject;		
 			  ]]>
