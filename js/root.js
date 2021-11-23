@@ -63,13 +63,13 @@ _ROOT_SYSTEM.ProcesarArbolUnidadesUI= function(xmlinfo){
 }
 
 _ROOT_SYSTEM.CargarInfoUnidadUI= function(sdiv_repeat, opx){
-	$.post({url:"controlador.aspx?op=ObtenerOPX&seccion=generic&opx=" + opx, succes:function(data,xqr){ eval("Fn_Repeat_" + sdiv_repeat + "_" + opx + "(data,xqr,$('#" + sdiv_repeat + "'));"); }});
+	$.post({sdiv_repeat:sdiv_repeat,url:"logic/controlador.aspx?op=ObtenerOPX&seccion=generic&opx=" + opx, succes:function(data,xqr){ eval("Fn_Repeat_" + sdiv_repeat + "_" + opx + "(data,xqr,$('#" + sdiv_repeat + "'));"); }});
 }
 
 _ROOT_SYSTEM.ResolverUnaUnidadUI= function(xmlUnidadUI){
 	var unTipoUI=$(xmlUnidadUI).find("tipoUnidadUI")[0];
 	var style=GetValAttr(unTipoUI,"css");if(style) document.head.appendChild(CrearDom("style",style));
-	var script=GetValAttr(unTipoUI,"javascript");if(script) document.head.appendChild(CrearDom("script",script.length>0?script:""));
+	var script=GetValAttr(unTipoUI,"javascript");if(script) document.head.appendChild(CrearDom("script",script));
 	var nuevo_dom= document.createElement("div");	
 	nuevo_dom.className= GetValAttr(unTipoUI,"class");
 	nuevo_dom.innerHTML=decodeHTMLEntities(GetValAttr(unTipoUI,"innerHTML"));
@@ -81,11 +81,10 @@ _ROOT_SYSTEM.ResolverUnaUnidadUI= function(xmlUnidadUI){
 		});
 	}
 	if(unTipoUI.getAttribute("es_recargable_db")=="1"){
-		document.head.appendChild(CrearDom("script","var Fn_Repeat_" + this.div_repeat + "_" + opx + "=" + xmlUnidadUI.getAttribute("callback_rec_db")));
-		var opx1= xmlUnidadUI.getAttribute("opx_rec_db");		
-		nuevo_dom.append(CrearDom("script","_ROOT_SYSTEM.CargarInfoUnidadUI('" + unTipoUI.getAttribute("obj_recargable_db"), opx1 + "');"));
+		var opx1= xmlUnidadUI.getAttribute("opx_rec_db");	
+		document.head.appendChild(CrearDom("script","var Fn_Repeat_" + this.div_repeat + "_" + opx1 + "=" + xmlUnidadUI.getAttribute("callback_rec_db")));
+		nuevo_dom.append(CrearDom("script","_ROOT_SYSTEM.CargarInfoUnidadUI('" + unTipoUI.getAttribute("obj_recargable_db") + "','" + (opx1?opx1:"0") + "');"));
 	}
-
 	
 
 	/*nuevo_dom.style= GetValAttr(xmlinfo,"evento");
