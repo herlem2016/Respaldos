@@ -63,7 +63,7 @@ _ROOT_SYSTEM.ProcesarArbolUnidadesUI= function(xmlinfo){
 }
 
 _ROOT_SYSTEM.CargarInfoUnidadUI= function(sdiv_repeat, opx){
-	$.post({sdiv_repeat:sdiv_repeat,url:"logic/controlador.aspx?op=ObtenerOPX&seccion=generic&opx=" + opx, succes:function(data,xqr){ eval("Fn_Repeat_" + sdiv_repeat + "_" + opx + "(data,xqr,$('#" + sdiv_repeat + "'));"); }});
+	$.post({url:"logic/controlador.aspx?op=ObtenerOPX&seccion=generic&opx=" + opx, succes:function(data,xqr){ eval("Fn_Repeat_" + sdiv_repeat + "_" + opx + "(data,xqr,$('#" + sdiv_repeat + "'));"); }});
 }
 
 _ROOT_SYSTEM.ResolverUnaUnidadUI= function(xmlUnidadUI){
@@ -80,13 +80,15 @@ _ROOT_SYSTEM.ResolverUnaUnidadUI= function(xmlUnidadUI){
 			obj.innerHTML=propiedades[i].children[0].getAttribute("valor");
 		});
 	}
+	
 	if(unTipoUI.getAttribute("es_recargable_db")=="1"){
 		var opx1= xmlUnidadUI.getAttribute("opx_rec_db");	
-		document.head.appendChild(CrearDom("script","var Fn_Repeat_" + this.div_repeat + "_" + opx1 + "=" + xmlUnidadUI.getAttribute("callback_rec_db")));
-		nuevo_dom.append(CrearDom("script","_ROOT_SYSTEM.CargarInfoUnidadUI('" + unTipoUI.getAttribute("obj_recargable_db") + "','" + (opx1?opx1:"0") + "');"));
+		if(opx1){
+			document.head.appendChild(CrearDom("script","var Fn_Repeat_" + unTipoUI.getAttribute("obj_recargable_db") + "_" + opx1 + "=" + (xmlUnidadUI.getAttribute("callback_rec_db")?xmlUnidadUI.getAttribute("callback_rec_db"):"function{}") ));
+			nuevo_dom.append(CrearDom("script","_ROOT_SYSTEM.CargarInfoUnidadUI('" + unTipoUI.getAttribute("obj_recargable_db") + "','" + opx1 + "');"));
+		}
 	}
 	
-
 	/*nuevo_dom.style= GetValAttr(xmlinfo,"evento");
 	var atributos=$(xmlinfo).find(" > atributo");
 	for(var i=0;i<atributos.length;i++){
