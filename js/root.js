@@ -63,7 +63,7 @@ _ROOT_SYSTEM.ProcesarArbolUnidadesUI= function(xmlinfo){
 }
 
 _ROOT_SYSTEM.CargarInfoUnidadUI= function(sdiv_repeat, opx){
-	$.post({url:"logic/controlador.aspx?op=ObtenerOPX&seccion=generic&opx=" + opx, succes:function(data,xqr){ eval("Fn_Repeat_" + sdiv_repeat + "_" + opx + "(data,xqr,$('#" + sdiv_repeat + "'));"); }});
+	$.post({url:"logic/controlador.aspx?op=GenerarOperacionCX_DB&seccion=generic&opx=" + opx, succes:function(data,xqr){ eval("Fn_Repeat_" + sdiv_repeat + "_" + opx + "(data,xqr,$('#" + sdiv_repeat + "'));"); }});
 }
 
 _ROOT_SYSTEM.ResolverUnaUnidadUI= function(xmlUnidadUI){
