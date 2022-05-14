@@ -24,8 +24,10 @@
         Response.Clear();
         Response.ContentType = "text/xml";		
 		
-        string op = Request["op"], seccion=Request["seccion"];
-        if(op !=null && seccion != null) {            
+        string op = Request["op"], seccion=Request["seccion"];string opx=Request["opx"];
+		if(opx!=null){
+			GenerarOperacionCX_DB();
+		}else if(op !=null && seccion != null) {            
             switch (op)
             {
                 case "CerrarSesiones": CerrarSesiones();break;
@@ -34,6 +36,7 @@
                 case "CerrarSesion": CerrarSesion();break;
                 case "EnviarNotificacion": EnviarNotificacion_HTTP();break;			
                 case "GenerarOperacionCX_DB": GenerarOperacionCX_DB();break;			
+                case "opx": GenerarOperacionCX_DB();break;			
                 default:{
 						DataSet ds;
 					
@@ -68,8 +71,10 @@
                     parametros[i,5]=Int32.Parse(ds.Tables[1].Rows[i]["longitud"].ToString());
                 }
             }
-            ds=oModelo.GenerarOperacionCX("place", "generic", parametros,true,ds.Tables[0].Rows[0]["sql_query"].ToString());
-            Notificar(ds);														
+			if(ds.Tables[0].Columns.Contains("sql_query")){
+				ds=oModelo.GenerarOperacionCX("place", "generic", parametros,true,ds.Tables[0].Rows[0]["sql_query"].ToString());
+				Notificar(ds);
+			}														
 			ds.WriteXml(Response.OutputStream);
         }
     }

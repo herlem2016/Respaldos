@@ -16,7 +16,7 @@
     <script src="js/root.js?v=1.2"></script>
 	<link rel="stylesheet" href="assets/dist/css/bootstrap.min.css">
 </head>
-<body proyecto="0" url="/logic/controlador.aspx" contenedor="wrap">  
+<body vista="1" url="/logic/controlador.aspx" contenedor="wrap">  
            
         <uc1:header runat="server" ID="header" />
 		<div id="wrap"></div>
