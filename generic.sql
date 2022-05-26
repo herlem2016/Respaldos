@@ -53,9 +53,9 @@ CREATE TABLE META_TiposUnidadUI(--Se convierte en una especificacion de clase de
 	indice INT PRIMARY KEY,
 	descripcion NVARCHAR(200),
 	css NVARCHAR(MAX),
-	class NVARCHAR(50),--Por defecto le da funcionalidad b·sica de acuerdo con lo ya existente en boostrap por ejemplo.
+	class NVARCHAR(50),--Por defecto le da funcionalidad b√°sica de acuerdo con lo ya existente en boostrap por ejemplo.
 	atributos NVARCHAR(500),
-	metodos text--AquÌ se colocan los metodos de la clase de objeto UI;
+	metodos text--Aqu√≠ se colocan los metodos de la clase de objeto UI;
 )
 ALTER TABLE META_TiposUnidadUI ALTER COLUMN innerHTML NVARCHAR(4000);
 ALTER TABLE META_TiposUnidadUI ADD javascript NVARCHAR(MAX);
@@ -234,7 +234,7 @@ CREATE TABLE META_UnidadesUI(
 	size SMALLINT,
 	css NVARCHAR(300),
 	class NVARCHAR(200)
-	--Se pretendÌa incluir campo din·mico(que se calcule al vuelo) pero mejor se decide que vengan creados desde BD.
+	--Se pretend√≠a incluir campo din√°mico(que se calcule al vuelo) pero mejor se decide que vengan creados desde BD.
 )
 
 CREATE TABLE META_TiposMsjsUI(
@@ -355,3 +355,31 @@ CREATE TABLE META_InstanciasUI_InfoUI(
 	unidadUI INT REFERENCES META_unidadesUI(indice),
 	infoUI INT REFERENCES OP_OperacionesCX(indice)
 )
+
+SELECT unidadUI.indice AS '@indice', unidadUI.orden AS '@orden',unidadUI.opx AS '@opx',unidadUI.data, tipoUnidadUI.item_repeat,tipoUnidadUI.wrap,  tipoUnidadUI.descripcion,tipoUnidadUI.indice tipoUnidad, tipoUnidadUI.innerHTML,tipoUnidadUI.css,tipoUnidadUI.javascript, propiedad.descripcion, valor 
+,dbo.AnidacionUI(tipoUnidadUI.indice) 
+FROM UI_Componentes unidadUI 
+INNER JOIN [META_TiposUnidadUI] tipoUnidadUI ON unidadUI.tipoUnidadUI=tipoUnidadUI.indice AND unidadUI.vista=1
+LEFT OUTER JOIN META_PropiedadesTiposUnidadesUI propiedad ON tipoUnidadUI.indice=propiedad.tipoUnidadUI
+LEFT OUTER JOIN UI_ValoresPropiedadesUnidadesUI valor ON valor.propiedad=propiedad.indice				
+ORDER BY unidadUI.orden ASC
+FOR XML PATH('UnidadUI'), ROOT('layout')
+
+
+CREATE TABLE UI_Layouts(
+	indice INT PRIMARY KEY,
+	descripcion NVARCHAR(200),
+	html NVARCHAR(MAX),
+	css NVARCHAR(MAX),
+	javascript NVARCHAR(MAX)
+)
+
+CREATE TABLE UI_Vistas(
+	indice INT PRIMARY KEY,
+	descripcion NVARCHAR(200),
+	html NVARCHAR(MAX),
+	css NVARCHAR(MAX),
+	javascript NVARCHAR(MAX),
+	icon INT REFERENCES GEN_Archivos(indice)
+)
+
