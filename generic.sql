@@ -383,3 +383,21 @@ CREATE TABLE UI_Vistas(
 	icon INT REFERENCES GEN_Archivos(indice)
 )
 
+CREATE TABLE EntidaesRelacionesDB(
+	indice INT PRIMARY KEY,
+	descripcion NVARCHAR(200),
+	nombre NVARCHAR(200),
+	script_init NVARCHAR(MAX),	
+	tipo SMALLINT,--1. Entidad, 2. Relacion
+)
+
+INSERT INTO EntidaesRelacionesDB
+SELECT * FROM (VALUES(1,'Users_test','Users_test',N'CREATE TABLE Users_test(
+	IdUsuario INT PRIMARY KEY,
+	Nombre NVARCHAR(200),
+	e_mail NVARCHAR(200),
+	pass NVARCHAR(20)
+)',1))Q(a,b,c,d,e) 
+
+SELECT * FROM EntidaesRelacionesDB;
+SELECT * FROM Users_test;
