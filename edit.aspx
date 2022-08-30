@@ -37,23 +37,29 @@
 		<script>
 		var _ROOT_SYSTEM= function(){}
 		_ROOT_SYSTEM.url_base="/logic/controlador.aspx";
+		
+		function AddCatalogoReveal(uiItem){
+			CrearPantalla("views-control",function(parentNode){
+				VerCatalogo(uiItem.getAttribute("concepto"),parentNode,uiItem.getAttribute("visibles").split(","), Editar);
+			}); 
+		}
+		
 		$(function(){	
 			Reveal.initialize({history: true,transition: 'slide',width:"80%", height:"100%"});
-			CrearPantalla("views-control",function(parentNode){
-				VerCatalogo('META_TiposUnidadUI',parentNode,['descripcion']);
-			}); 		  
+			AddCatalogoReveal(document.getElementById("cinicial"));			
 		});
 		 
-		 function GuardarEdicion(id,part){
-			var content= encodeURIComponent(document.getElementById("e_" + part).value);
-			$.post(url,{component:id,part:part,content:content},function(data){
-				alert(GetVal(data,"mensaje"));
-			});
+		 function GuardarEdicion(){
+			var concepto= _conceptoActual;
+			var _form= $(".present form")[0];
+			Guardar(_form, concepto);
 		 }
 		 
-		 function Editar(concepto){
-			CrearPantalla('views-control',function(parentNode){
-				MostrarForm(concepto,parentNode);
+		 function Editar(){
+			var concepto= _conceptoActual;
+			var datai= item_seleccionado.datai;
+			CrearPantalla('views-control',function(parentNode){				
+				MostrarForm(concepto,parentNode,datai);
 			});
 		 }
 		 
@@ -85,6 +91,8 @@
 		div.reveal .slides{text-align:inherit}
 		div.reveal section.present{height:100%;overflow:auto;}
 		
+		.seleccionado{background-color:rgb(#99ddee)}
+		
 	</style>
 	
 </head>
@@ -93,12 +101,12 @@
 			<div class="group">
 				<div class="buttons">
 					<ul class="objetos sel">
-						<li onclick="CrearPantalla('views-control',function(parentNode){VerCatalogo('COM_Proyectos',parentNode,['descripcion']);});"><label class="pro">Proyectos</label></li>
-						<li onclick="CrearPantalla('views-control',function(parentNode){VerCatalogo('UI_Layouts',parentNode,['descripcion']);});"><label class="lay">Layouts</label></li>
-						<li onclick="CrearPantalla('views-control',function(parentNode){VerCatalogo('META_TiposUnidadUI',parentNode,['descripcion']);});"><label class="comp">Componentes</label></li>
+						<li id="cinicial" concepto="COM_Proyectos" visibles="'descripcion'" onclick="AddCatalogoReveal(this);"><label class="pro">Proyectos</label></li>
+						<li concepto="META_TiposUnidadUI" visibles="'descripcion'"onclick="AddCatalogoReveal(this);" ><label class="comp">Componentes</label></li>
+						<li concepto="UI_Layouts" visibles="'descripcion'" onclick="AddCatalogoReveal(this);" ><label class="lay">Layouts</label></li>
 					</ul>
-					<button onclick="Guardar($('#edit').find('form')[0],_conceptoActual);">Guardar</button>
-					<button onclick="Editar(_conceptoActual);">Editar</button>
+					<button onclick="GuardarEdicion();">Guardar</button>
+					<button onclick="Editar();">Editar</button>
 					<button onclick="NuevoItem($('#edit').find('form')[0],_conceptoActual);">Nuevo</button>
 				</div>
 				<div class="edit" id="edit">

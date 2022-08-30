@@ -175,6 +175,7 @@ function CrearPantalla(contenedor,callback){
 	callback(slide);
 	contenedor=(typeof(contenedor)=="string"?document.getElementById(contenedor):contenedor);
 	contenedor.appendChild(slide);
+	Reveal.slide(Reveal.getSlides().length-1);
 }
 
 //Formularios
@@ -183,6 +184,7 @@ var item_seleccionado=undefined;
 var nuevo_editar=undefined;//0 Editar, 1 Nuevo;
 
 function VerCatalogo(sobject, contenedor, visibles, callback){
+	_conceptoActual=sobject;
 	contenedor= (typeof(contenedor)=="object"?contenedor:document.getElementById(contenedor));
 	item_seleccionado=undefined;
 	ObtenerConsulta(sobject,function (xmlDoc) {
@@ -218,6 +220,9 @@ function VerCatalogo(sobject, contenedor, visibles, callback){
 					var td= CrearDom("td",GetVal(datos[i],headers[j].getAttribute("propiedad")));
 					td.setAttribute("scope","row");
 					tr.appendChild(td);
+					
+					MarcarItem(datos[i],tr,callback,sobject);
+					
 					if(headers[j].id==true){
 						tr.idItem=GetVal(datos[i],headers[j].getAttribute("propiedad"));
 					}
@@ -225,7 +230,6 @@ function VerCatalogo(sobject, contenedor, visibles, callback){
 			}
 			bodyT.appendChild(tr);
 		}
-		if(callback){callback(contenedor);}
     });	
 }
 
@@ -386,6 +390,14 @@ function ObtenerItemForm(label,campo,tipo,nodoXml,datos){
 	}	
 	return itemForm;
 }
+
+function MarcarItem(datai,itemUI, callback,concepto){	
+	itemUI.datai=datai;
+	if(GetVal(datai,"css")||GetVal(datai,"html")||GetVal(datai,"html")){
+		itemUI.style.fontWeight="bold";
+	}
+}
+
 
 var _conceptoActual;
 function ObtenerItems(concepto){
