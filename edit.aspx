@@ -40,7 +40,7 @@
 		
 		function AddCatalogoReveal(uiItem){
 			CrearPantalla("views-control",function(parentNode){
-				VerCatalogo(uiItem.getAttribute("concepto"),parentNode,uiItem.getAttribute("visibles").split(","), Editar);
+				VerCatalogo(uiItem.getAttribute("concepto"),parentNode,uiItem.getAttribute("visibles").split(","), CrearForm);
 			}); 
 		}
 		
@@ -55,11 +55,17 @@
 			Guardar(_form, concepto);
 		 }
 		 
-		 function Editar(){
-			var concepto= _conceptoActual;
+		 function EliminarItem_(){
 			var datai= item_seleccionado.datai;
+			EliminarItem(GetVal(datai,"indice"));
+		 }
+		 
+		 function CrearForm(isEdit){
+			var concepto= _conceptoActual;
+			var datai;
+			if(isEdit) datai= item_seleccionado.datai;
 			CrearPantalla('views-control',function(parentNode){				
-				MostrarForm(concepto,parentNode,datai);
+				MostrarForm(concepto,parentNode,datai,isEdit);
 			});
 		 }
 		 
@@ -105,9 +111,10 @@
 						<li concepto="META_TiposUnidadUI" visibles="'descripcion'"onclick="AddCatalogoReveal(this);" ><label class="comp">Componentes</label></li>
 						<li concepto="UI_Layouts" visibles="'descripcion'" onclick="AddCatalogoReveal(this);" ><label class="lay">Layouts</label></li>
 					</ul>
+					<button style="margin-left:40px;" onclick="EliminarItem_();">Eliminar</button>
 					<button onclick="GuardarEdicion();">Guardar</button>
-					<button onclick="Editar();">Editar</button>
-					<button onclick="NuevoItem($('#edit').find('form')[0],_conceptoActual);">Nuevo</button>
+					<button onclick="CrearForm(true);">Editar</button>
+					<button onclick="CrearForm(false);">Nuevo</button>
 				</div>
 				<div class="edit" id="edit">
 					<div class="reveal"><div class="slides" id="views-control"></div></div>

@@ -234,17 +234,17 @@ function VerCatalogo(sobject, contenedor, visibles, callback){
 }
 
 function MostrarForm(concepto,idForm,nodoXml,es_editar){
-	$.post(_ROOT_SYSTEM.url_base,{op:"ObtenerEstructuraTable",seccion:"generic",sobject: concepto}, function (xmlConcepto) {
-		nuevo_editar=es_editar;
+	$.post(_ROOT_SYSTEM.url_base,{op:"ObtenerEstructuraTable",seccion:"generic",sobject: concepto}, function (xmlConcepto) {		
 		var campos= $(xmlConcepto).find("Entidad > Campo");
-		var form_dom=(typeof(idForm)=="object"? idForm: document.getElementById(idForm));
-		if(form_dom.tagName.toLowerCase()!="form"){
-			form_dom.appendChild(CrearDom("form"));
-			form_dom=form_dom.children[0];
+		var _form_dom=(typeof(idForm)=="object"? idForm: document.getElementById(idForm));		
+		if(_form_dom.tagName.toLowerCase()!="form"){
+			form_dom=CrearDom("form");
+			_form_dom.appendChild(form_dom);
 		}
 		form_dom.innerHTML="";
 		form_dom.style.display="block";
-		var item;
+		var item=ObtenerItemForm("isEdit_","isEdit_","hidden",null,es_editar);
+		form_dom.appendChild(item);
 		for(var i=0;i<campos.length;i++){
 			if(!campos[i].aux){
 				item=ObtenerItemForm(campos[i].getAttribute("propiedad"), campos[i].getAttribute("propiedad"), campos[i].getAttribute("tipo"),nodoXml,campos[i].datos);
@@ -255,10 +255,9 @@ function MostrarForm(concepto,idForm,nodoXml,es_editar){
 	});
 }
 
-function EliminarItem(){
-	var idItem_= $("#bodyT tr.seleccionado")[0];
-	if(idItem_ && idItem_.idItem){
-		$.post(url + 'Negocio/controlador.aspx?op=Eliminar&seccion=' + estado_edit[row_seleccionado], {idItem:idItem_.idItem}, function (xmlDoc) {
+function EliminarItem(indice){
+	if(indice){
+		$.post(_ROOT_SYSTEM.url_base,{op:"Eliminar",seccion:"generic",sobject:_conceptoActual,indice:indice}, function (xmlDoc) {
 			if (GetVal(xmlDoc, "estatus") == 1) {
 				tipo="success";
 				VerCatalogo(row_seleccionado,function(){
@@ -338,6 +337,10 @@ function ObtenerItemForm(label,campo,tipo,nodoXml,datos){
 	itemForm.className="form-floating";
 	var contenido="";
 	switch(tipo){
+		case "hidden": {
+				contenido= '<input value="' + datos + '" type="hidden" class="form-control" name="' + campo + '" />';						  
+				itemForm.innerHTML=contenido;
+		}break;
 		case "int": {
 				contenido= '<input value="' + (nodoXml?GetVal(nodoXml,campo):"") + '" type="number" class="form-control" name="' + campo + '" id="' + campo + '" placeholder="' + label + '">'+
 						  '<label for="floatingPassword">' + label + '</label>';

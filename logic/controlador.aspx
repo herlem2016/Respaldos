@@ -37,6 +37,7 @@
                 case "EnviarNotificacion": EnviarNotificacion_HTTP();break;			
                 case "GenerarOperacionCX_DB": GenerarOperacionCX_DB();break;			
                 case "opx": GenerarOperacionCX_DB();break;			
+				case "Guardar": GuardarObject();break;
                 default:{
 						DataSet ds;
 					
@@ -55,7 +56,42 @@
             Response.Write("<mensaje>No se recibieron parametros op y sección.</mensaje>");
         }
     }
-
+	
+	public void GuardarObject(){
+        DataSet ds= oModelo.GenerarOperacionCX("ObtenerEstructuraTable","generic",new object[,]{{ "In table", "inTable",1,false,"bool", 0}},true);
+        object [,] parametros= null;
+		string propiedades="",coma="";string tipo="";int longitud;
+		if(ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0){
+			parametros= new object[ds.Tables[0].Rows.Count,6];
+			for(int i=0; i<ds.Tables[0].Rows.Count; i++){
+				parametros[i,0]=ds.Tables[0].Rows[i]["propiedad"];
+				parametros[i,1]=ds.Tables[0].Rows[i]["propiedad"];
+				parametros[i,2]=Request[ds.Tables[0].Rows[i]["propiedad"].ToString()];
+				parametros[i,3]=bool.Parse(ds.Tables[0].Rows[i]["requerido"].ToString());
+				tipo=ds.Tables[0].Rows[i]["tipo"].ToString();
+				parametros[i,4]=(tipo=="css"||tipo=="html"||tipo=="jscript"||tipo=="sql"?"string":tipo);
+				longitud=Int32.Parse(ds.Tables[0].Rows[i]["longitud"].ToString());
+				parametros[i,5]=(tipo=="css"||tipo=="html"||tipo=="jscript"||tipo=="sql"?8000:longitud);
+				propiedades+= coma + ds.Tables[0].Rows[i]["propiedad"];
+				coma=",";				
+			}
+			
+			var sparams= new object[1,6];
+			sparams[0,0]="parametros";
+			sparams[0,1]="parametros";
+			sparams[0,2]=propiedades;
+			sparams[0,3]=true;
+			sparams[0,4]="string";
+			sparams[0,5]=4000;
+			ds=oModelo.GenerarOperacionCX("Guardar", "generic", sparams,true);
+			//ds.WriteXml(Response.OutputStream);
+			if(ds.Tables[0].Columns.Contains("sql_query")){
+				ds=oModelo.GenerarOperacionCX("place", "generic", parametros,true,ds.Tables[0].Rows[0]["sql_query"].ToString());
+				ds.WriteXml(Response.OutputStream);
+			}								
+		}	
+    }
+	
     public void GenerarOperacionCX_DB(){
         DataSet ds= oModelo.GenerarOperacionCX("ObtenerParametrosPre","generic",null,true);
         object [,] parametros= null;
