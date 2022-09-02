@@ -247,7 +247,7 @@ function MostrarForm(concepto,idForm,nodoXml,es_editar){
 		form_dom.appendChild(item);
 		for(var i=0;i<campos.length;i++){
 			if(!campos[i].aux){
-				item=ObtenerItemForm(campos[i].getAttribute("propiedad"), campos[i].getAttribute("propiedad"), campos[i].getAttribute("tipo"),nodoXml,campos[i].datos);
+				item=ObtenerItemForm(campos[i].getAttribute("propiedad"), campos[i].getAttribute("propiedad"), campos[i].getAttribute("tipo"),nodoXml,campos[i]);
 				form_dom.appendChild(item);
 				if(item.callback) item.callback();
 			}
@@ -336,6 +336,12 @@ function ObtenerItemForm(label,campo,tipo,nodoXml,datos){
 	var itemForm=document.createElement('div');
 	itemForm.className="form-floating";
 	var contenido="";
+	var table_ref,campo_ref;
+	if(datos && (table_ref=datos.getAttribute("tabla_ref"))){
+		alert(1);
+		tipo="select";
+	}
+	
 	switch(tipo){
 		case "hidden": {
 				contenido= '<input value="' + datos + '" type="hidden" class="form-control" name="' + campo + '" />';						  
@@ -351,11 +357,12 @@ function ObtenerItemForm(label,campo,tipo,nodoXml,datos){
 					'<label for="floatingPassword">' + label + '</label>';
 					 itemForm.innerHTML=contenido;
 		}break;
-		case "select": {
+		case "select": {			
 			var filtros={};
 			if(datos.filtros) eval('filtros=' + datos.filtros + '();');
-			$.post(datos.url,filtros, function(xmlDoc) {
-				var items= xmlDoc.getElementsByTagName("Table");
+			$.post(_ROOT_SYSTEM.url_base,{op:"ObtenerItems",seccion:"generic",concepto: table_ref}, function (xmlDoc) {	
+			//$.post(datos.url,filtros, function(xmlDoc) {
+				var items= $(xmlDoc).find("Response Items item");
 				contenido= document.createElement("select");
 				contenido.innerHTML="<option>Seleccione opción</option>";
 				contenido.className="form-control";
@@ -363,8 +370,8 @@ function ObtenerItemForm(label,campo,tipo,nodoXml,datos){
 				var item;
 				for(var i=0;i<items.length;i++){
 					item=document.createElement("option");
-					item.innerHTML=GetVal(items[i],datos.descripcion);
-					item.value=GetVal(items[i],datos.val);
+					item.innerHTML=GetVal(items[i],"descripcion");
+					item.value=GetVal(items[i],datos.getAttribute("campo_ref"));
 					if(GetVal(nodoXml,campo)==item.value){ 
 						item.setAttribute("selected","selected");
 					}

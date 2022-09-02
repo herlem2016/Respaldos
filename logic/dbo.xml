@@ -173,7 +173,7 @@
 				ELSE BEGIN
 					DECLARE @XmlData XML;
 					SET @XmlData = (
-						SELECT gindex '@gindex',propiedad '@propiedad', tipo '@tipo', longitud '@longitud', requerido '@requerido'
+						SELECT gindex '@gindex',propiedad '@propiedad', tipo '@tipo', alias '@alias', alias_ref '@alias_ref', longitud '@longitud', requerido '@requerido', script_ref '@script_ref', tabla_ref '@tabla_ref',campo_ref '@campo_ref'
 						FROM @tEstructura
 						FOR XML PATH('Campo'), ROOT('Entidad')
 					);
@@ -182,7 +182,7 @@
 			  ]]>
 		</sql>
     </ObtenerEstructuraTable>
-	
+		
 	<EstructuraTable>
 		<sql>
 			<![CDATA[
