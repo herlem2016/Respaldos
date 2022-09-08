@@ -110,6 +110,7 @@
 						<li id="cinicial" concepto="COM_Proyectos" visibles="'descripcion'" onclick="AddCatalogoReveal(this);"><label class="pro">Proyectos</label></li>
 						<li concepto="META_TiposUnidadUI" visibles="'descripcion'"onclick="AddCatalogoReveal(this);" ><label class="comp">Componentes</label></li>
 						<li concepto="UI_Layouts" visibles="'descripcion'" onclick="AddCatalogoReveal(this);" ><label class="lay">Layouts</label></li>
+						<li concepto="UI_Vistas" visibles="'descripcion'" onclick="AddCatalogoReveal(this);" ><label class="lay">Views</label></li>
 					</ul>
 					<button style="margin-left:40px;" onclick="EliminarItem_();">Eliminar</button>
 					<button onclick="GuardarEdicion();">Guardar</button>
