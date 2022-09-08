@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<Secciones>
+  <generic>
+	<ObtenerVista>
+      <campo leyenda="Vista" db_nombre="vista" form_nombre="vista" requerido="true" charsize="0" tipo="int"/>
+      <sql>
+        <![CDATA[
+			DECLARE @XmlData XML;
+			SET @XmlData = (
+				SELECT * FROM UI_Vistas WHERE indice=@vista
+				FOR XML PATH('Layout')
+			);
+			SELECT @XmlData AS xmldoc;
+          ]]>
+      </sql>
+    </ObtenerVista>
+	
+    <ObtenerComponentes>
+      <campo leyenda="Componentes" db_nombre="componentes" form_nombre="componentes" requerido="true" charsize="2000" tipo="string"/>
+      <sql>
+        <![CDATA[
+			DECLARE @XmlData XML;
+			SET @XmlData = (
+				SELECT tipoUnidadUI.indice '@tipoUnidadUI', tipoUnidadUI.item_repeat,tipoUnidadUI.wrap,  tipoUnidadUI.descripcion, tipoUnidadUI.innerHTML,tipoUnidadUI.css,tipoUnidadUI.javascript, propiedad.descripcion, valor 
+				,dbo.AnidacionUI(tipoUnidadUI.indice) 
+				FROM (SELECT item tipoUnidadUI FROM dbo.Split(@componentes,',')) unidadUI 
+				INNER JOIN [META_TiposUnidadUI] tipoUnidadUI ON unidadUI.tipoUnidadUI=tipoUnidadUI.indice 
+				LEFT OUTER JOIN META_PropiedadesTiposUnidadesUI propiedad ON tipoUnidadUI.indice=propiedad.tipoUnidadUI
+				LEFT OUTER JOIN UI_ValoresPropiedadesUnidadesUI valor ON valor.propiedad=propiedad.indice				
+				FOR XML PATH('UnidadUI'), ROOT('Layout')
+			);
+			SELECT @XmlData AS xmldoc;
+          ]]>
+      </sql>
+    </ObtenerComponentes>
+	
+	 <ObtenerTiposComponentes>
+      <sql>
+        <![CDATA[
+			DECLARE @XmlData XML;
+			SET @XmlData = (
+				SELECT tipoUnidadUI.indice '@tipoUnidadUI', tipoUnidadUI.descripcion '@descripcion', tipoUnidadUI.*
+				FROM [META_TiposUnidadUI] tipoUnidadUI 
+				LEFT OUTER JOIN META_PropiedadesTiposUnidadesUI propiedad ON tipoUnidadUI.indice=propiedad.tipoUnidadUI
+				LEFT OUTER JOIN UI_ValoresPropiedadesUnidadesUI valor ON valor.propiedad=propiedad.indice				
+				FOR XML PATH('componente'), ROOT('Componentes')
+			);
+			SELECT @XmlData AS xmldoc;
+          ]]>
+      </sql>
+    </ObtenerTiposComponentes>
+	
+	<ObtenerItems>
+		<campo leyenda="Concepto" db_nombre="concepto" form_nombre="concepto" requerido="true" charsize="100" tipo="string"/>
+		<campo leyenda="Nombre de Objeto" db_nombre="sobject" form_nombre="sobject" requerido="false" charsize="100" tipo="string"/>
+		<sql>
+        <![CDATA[
+			SET @sobject=@concepto;
+			@@subquery=[EstructuraTable];			
+			DECLARE @query NVARCHAR(MAX);
+			SELECT @query= N'SET @XmlData_E= (SELECT ' + 
+				STUFF((SELECT CASE WHEN script_ref IS NOT NULL THEN ',(' + script_ref + ') [' + alias_ref + ']' ELSE '' END + 
+					',@@replace[concepto].[' + propiedad + ']' AS [text()]
+					FROM @tEstructura                        
+					FOR XML PATH('')
+				), 1, 1, '')
+				+ 
+				' FROM ' + @concepto + 
+				(SELECT CASE WHEN campo_ref IS NOT NULL THEN ' LEFT OUTER JOIN ' + tabla_ref + ' ' + tabla_ref + '_' + CONVERT(NVARCHAR(20),gindex) + ' ON ' + tabla_ref + '_' + CONVERT(NVARCHAR(20),gindex) + '.' + campo_ref + '=' + @concepto + '.' + propiedad ELSE '' END AS [text()]
+					FROM @tEstructura                    
+					FOR XML PATH('')
+				)
+				+ ' FOR XML PATH(''item''), ROOT(''Items''))';
+			
+				DECLARE @XmlData XML;
+				SET @XmlData = (
+					SELECT gindex '@gindex',propiedad '@propiedad', tipo '@tipo', longitud '@longitud', requerido '@requerido', tabla_ref '@tabla_ref',campo_ref '@campo_ref', alias '@alias', script_ref '@script_ref', alias_ref '@alias_ref'
+					FROM @tEstructura
+					FOR XML PATH('Campo'), ROOT('Entidad')
+				);
+				--SELECT @query;
+				DECLARE @XmlData_E XML;
+				EXEC sp_executesql @query, N'@XmlData_E XML OUTPUT', @XmlData_E=@XmlData_E OUTPUT;--Se utiliza output ya que es la unica forma de extraer un resultado de cualquier tipo, no solo int.
+				
+				DECLARE @XmlDataResp XML;
+				SET @XmlDataResp = (
+					SELECT @XmlData,@XmlData_E 				
+					FOR XML PATH('Response')
+				);
+				SELECT @XmlDataResp AS xmldoc;
+			
+          ]]>
+      </sql>
+	</ObtenerItems>	
+	
+	<Guardar>
+		<campo leyenda="Object" db_nombre="sobject" form_nombre="sobject" requerido="true" charsize="100" tipo="string"/>
+		<campo leyenda="Es edición" db_nombre="isEdit_" form_nombre="isEdit_" requerido="true" charsize="0" tipo="bool" default="false"/>
+		<sql>
+        <![CDATA[
+			DECLARE @query NVARCHAR(MAX);
+			DECLARE @queryAsign NVARCHAR(MAX);
+			--SELECT @queryAsign=COALESCE(@queryAsign + ',' + item + '= CASE WHEN @' + item + ' IS NOT NULL THEN @' + item + ' ELSE ' + item + ' END',item) FROM dbo.Split(',' + @parametros,',');
+			SELECT @queryAsign=COALESCE(@queryAsign + ',' + item + '= @' + item ,item) FROM dbo.Split(',' + @parametros,',');
+			
+			IF(@isEdit_=1)BEGIN				
+				SET @query= 'UPDATE @@replace[sobject] SET ' + STUFF(@queryAsign,1,1,'') + ' WHERE indice=@indice';				
+			END ELSE BEGIN				
+				SET @query= 'INSERT INTO @@replace[sobject] VALUES(' + STUFF(REPLACE(',@@replace[parametros]',',',',@'),1,1,'') + ')';
+			END
+			SELECT @query + '; SELECT ''OK''' sql_query;			
+          ]]>
+      </sql>
+	</Guardar>	
+	
+	<Eliminar>
+		<campo leyenda="Object" db_nombre="sobject" form_nombre="sobject" requerido="true" charsize="100" tipo="string"/>
+		<campo leyenda="Indice" db_nombre="indice" form_nombre="indice" requerido="true" charsize="0" tipo="int"/>
+		<sql>
+        <![CDATA[						
+			DELETE FROM @@replace[sobject] WHERE indice=@indice;
+			SELECT 'OK' status;
+          ]]>
+      </sql>
+	</Eliminar>
+	
+	<ObtenerNavegacionUI>
+		<campo leyenda="Unidad de Interfaz de usuario" db_nombre="unidadUI" form_nombre="unidadUI" requerido="true" charsize="0" tipo="int"/>
+		<sql>
+			<![CDATA[			
+				SELECT 
+					Q.indice,
+					R.innerHTML,
+					CONVERT(XML,(
+						SELECT  A.indice,
+								B.innerHTML,
+								dbo.AnidacionUI(A.indice) UnidadesUI
+						FROM    META_UnidadesUI A INNER JOIN META_TiposUnidadUI B ON A.tipoUnidadUI=B.indice
+						WHERE   unidadUI_padre = Q.indice
+						FOR XML PATH('UnidadUI')
+					))   
+				FROM dbo.META_UnidadesUI Q INNER JOIN META_TiposUnidadUI R ON Q.tipoUnidadUI=R.indice
+				WHERE Q.indice=@unidadUI
+				FOR XML PATH ('ComponenteUI')
+			  ]]>
+		</sql>
+    </ObtenerNavegacionUI>
+	
+	<ObtenerParametrosPre>
+		<campo leyenda="Clave de operación" db_nombre="opx" form_nombre="opx" requerido="true" charsize="100" tipo="string"/>
+		<sql>
+			<![CDATA[			
+				DECLARE @opx_ INT;
+				IF(ISNUMERIC(@opx)=1) BEGIN
+					SET @opx_=CONVERT(INT,@opx);	
+				END ELSE BEGIN
+					SELECT @opx_=indice FROM OP_OperacionesCX WHERE nombre like @opx;						
+				END
+				SELECT sql_query FROM OP_OperacionesCX WHERE indice=@opx_;
+				SELECT leyenda,nombre,nombre_db,requerido,tipo,longitud FROM [dbo].[OP_OperacionesCX_Parametros] WHERE operacioncx=@opx_;		
+			  ]]>
+		</sql>
+    </ObtenerParametrosPre>
+	
+	<ObtenerEstructuraTable>
+		<campo leyenda="Nombre de Objeto" db_nombre="sobject" form_nombre="sobject" requerido="true" charsize="100" tipo="string"/>
+		<campo leyenda="In table" db_nombre="inTable" form_nombre="inTable" requerido="false" charsize="0" tipo="bool" default="false"/>
+		<sql>
+			<![CDATA[
+				@@subquery=[EstructuraTable];
+				IF @inTable=1
+					SELECT * FROM @tEstructura;
+				ELSE BEGIN
+					DECLARE @XmlData XML;
+					SET @XmlData = (
+						SELECT gindex '@gindex',propiedad '@propiedad', tipo '@tipo', alias '@alias', alias_ref '@alias_ref', longitud '@longitud', requerido '@requerido', script_ref '@script_ref', tabla_ref '@tabla_ref',campo_ref '@campo_ref'
+						FROM @tEstructura
+						FOR XML PATH('Campo'), ROOT('Entidad')
+					);
+					SELECT @XmlData AS xmldoc;
+				END
+			  ]]>
+		</sql>
+    </ObtenerEstructuraTable>
+		
+	<EstructuraTable>
+		<sql>
+			<![CDATA[
+				--DECLARE @sobject NVARCHAR(50)='SEG_PerfilUsuarios';
+				DECLARE @tEstructura AS TABLE( gindex INT,propiedad NVARCHAR(100),tipo NVARCHAR(50), alias NVARCHAR(50), alias_ref NVARCHAR(50), script_ref NVARCHAR(400), tabla_ref NVARCHAR(50),campo_ref NVARCHAR(50),longitud INT, requerido BIT);
+				INSERT INTO @tEstructura 
+				SELECT ORDINAL_POSITION gindex, column_name propiedad, CASE  WHEN C.tipo IS NOT NULL THEN C.tipo WHEN data_type like '%char' THEN 'string' WHEN data_type like 'bit' THEN 'bool' ELSE data_type END tipo, 
+				C.alias,C.alias_ref,C.script_ref,FK.table_ref,FK.campo_ref,
+				ISNULL(CHARACTER_MAXIMUM_LENGTH,0) longitud,CONVERT(BIT,CASE WHEN IS_NULLABLE='YES' THEN 0 ELSE 1 END) requerido 
+				FROM INFORMATION_SCHEMA.COLUMNS Campo LEFT OUTER JOIN EntidadesRelacionesDB E ON E.nombre like campo.table_name LEFT OUTER JOIN Meta_ColumnsDB C ON E.indice=C.Object_parent AND campo.column_name=C.nombre
+				LEFT OUTER JOIN (	
+					SELECT
+						OBJECT_NAME(referenced_object_id) as 'table_ref',
+						COL_NAME(referenced_object_id, referenced_column_id) as 'campo_ref',
+						COL_NAME(parent_object_id, parent_column_id) as 'campo',
+						OBJECT_NAME(constraint_object_id) 'Constraint Name'
+					FROM sys.foreign_key_columns
+					WHERE OBJECT_NAME(parent_object_id) = @sobject
+				)FK ON FK.campo=campo.COLUMN_NAME
+				WHERE TABLE_NAME=@sobject;				
+			  ]]>
+		</sql>
+	</EstructuraTable>
+	
+	<place>
+		<sql>
+			<![CDATA[			
+					
+			  ]]>
+		</sql>
+	</place>
+
+	<ObtenerValoresUI>
+		<campo leyenda="Unidad de Interfaz de usuario" db_nombre="unidadUI" form_nombre="unidadUI" requerido="true" charsize="0" tipo="int"/>
+		<sql>
+			<![CDATA[			
+				SELECT 
+					Q.indice,
+					R.innerHTML,
+					CONVERT(XML,(
+						SELECT  A.indice,
+								B.innerHTML,
+								dbo.AnidacionUI(A.indice) UnidadesUI
+						FROM    META_UnidadesUI A INNER JOIN META_TiposUnidadUI B ON A.tipoUnidadUI=B.indice
+						WHERE   unidadUI_padre = Q.indice
+						FOR XML PATH('UnidadUI')
+					))   
+				FROM dbo.META_UnidadesUI Q INNER JOIN META_TiposUnidadUI R ON Q.tipoUnidadUI=R.indice
+				WHERE Q.indice=@unidadUI
+				FOR XML PATH ('ComponenteUI')
+			  ]]>
+		</sql>
+    </ObtenerValoresUI>
+	
+  </generic>   
+</Secciones>
