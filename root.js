@@ -315,7 +315,7 @@ function SeleccionarItem(){
 	item_seleccionado=this;
 }
 
-function Guardar(frm,concepto){
+function Guardar(frm,concepto,callback){
 	var codes= $(frm).find("textarea[tipo=code]");
 	for(var i=0; i<codes.length;i++){
 		codes[i].value=encodeURIComponent(codes[i].parentNode.editor.getDoc().getValue());
@@ -323,7 +323,7 @@ function Guardar(frm,concepto){
 	var datos = $(frm).serializeArray();
 	$.post('/logic/controlador.aspx?op=Guardar'+ '&seccion=generic&sobject=' + concepto, datos, function (xmlDoc) {
         if (GetVal(xmlDoc, "estatus") == 1){
-			alert(GetVal(xmlDoc,"mensaje"));            
+			if(callback) callback(xmlDoc);          
         }else{
 			tipo="danger";
 		}
@@ -350,13 +350,8 @@ function ObtenerItemForm(label,campo,tipo,nodoXml,datos,es_editar){
 			itemForm.appendChild(contenido);
 			itemForm.tipo=campo;
 			itemForm.callback=function(){				
-				this.editor=CodeMirror.fromTextArea(this.getElementsByTagName("textarea")[0],{mode: {name: this.tipo}});
-				var content="";
-				try{
-					content=decodeURIComponent(GetVal(nodoXml,campo,true));
-				}catch(e){
-					content=GetVal(nodoXml,campo,true);
-				}
+				this.editor=CodeMirror.fromTextArea(this.getElementsByTagName("textarea")[0],{mode: {name: (campo=="html"?"htmlmixed":this.tipo)}});
+				var content=GetVal(nodoXml,campo,true);
 				this.editor.getDoc().setValue(content);
 			}
 	}else{
@@ -383,6 +378,7 @@ function ObtenerItemForm(label,campo,tipo,nodoXml,datos,es_editar){
 					var items= $(xmlDoc).find("Response Items item");
 					contenido= document.createElement("select");
 					contenido.innerHTML="<option>Seleccione opción</option>";
+					contenido.value=null;
 					contenido.className="form-control";
 					contenido.name=campo;
 					var item;
