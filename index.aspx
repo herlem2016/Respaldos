@@ -15,11 +15,29 @@
     <script src="assets/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/root.js?v=1.2"></script>
 	<link rel="stylesheet" href="assets/dist/css/bootstrap.min.css">
+	<link rel="stylesheet" href="reveal/dist/reveal.css">
+	<script src="reveal/dist/reveal.js"></script>
+	<link rel="stylesheet" href="reveal/dist/theme/white.css" id="theme">
+	<script>		
+		window.onload= function(){
+			_ROOT_SYSTEM.url_base= document.body.getAttribute("url");
+			_ROOT_SYSTEM.vistaInicial= document.body.getAttribute("vista");
+			_ROOT_SYSTEM.contenedor= document.body.getAttribute("contenedor");
+			_ROOT_SYSTEM.ConstruirUI(_ROOT_SYSTEM.url_base,_ROOT_SYSTEM.vistaInicial,_ROOT_SYSTEM.contenedor);
+		}
+		
+		$(function(){	
+			Reveal.initialize({history: true,transition: 'slide',width:"100%", height:"100%"});
+		});
+	</script>
+	<style>
+		html,body{height:100%;margin:0px;}
+		body.*{font-family:Roboto Verdana;color:#444;}
+		div.reveal .slides{text-align:inherit}
+		div.reveal section.present{height:100%;overflow:auto;}
+	</style>
 </head>
-<body vista="1" url="/logic/controlador.aspx" contenedor="wrap">  
-           
-        <uc1:header runat="server" ID="header" />
-		<div id="wrap"></div>
-        <uc2:footer runat="server" ID="footer" />
+<body vista="1" url="/logic/controlador.aspx" contenedor="views-control">
+	<div class="reveal"><div class="slides" id="views-control"><section></section></div></div>
 </body>
 </html>

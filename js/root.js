@@ -66,7 +66,8 @@ _ROOT_SYSTEM.ConstruirUI= function(url,vista,dom_contenedor){
 }
 
 _ROOT_SYSTEM.ProcesarVista= function(url,xmlinfo){
-	var nuevo_dom= CrearDom("div",$($(xmlinfo).find("Layout > html")[0]).html(),true);
+	var nuevo_dom= CrearDom("section",$($(xmlinfo).find("Layout > html")[0]).html(),true);
+	nuevo_dom.className="present";
 	var jscript= CrearDom("script",$($(xmlinfo).find("Layout > javascript")[0]).html());
 	document.head.appendChild(jscript);
 	var unidadesUI=$(nuevo_dom).find("div[nel-ui]");
@@ -243,7 +244,7 @@ function MostrarForm(concepto,idForm,nodoXml,es_editar){
 		}
 		form_dom.innerHTML="";
 		form_dom.style.display="block";
-		var item=ObtenerItemForm("isEdit_","isEdit_","hidden",null,es_editar);
+		var item=ObtenerItemForm("isEdit_","isEdit_","hidden",null,null,es_editar);
 		form_dom.appendChild(item);
 		for(var i=0;i<campos.length;i++){
 			if(!campos[i].aux){
@@ -315,7 +316,7 @@ function SeleccionarItem(){
 	item_seleccionado=this;
 }
 
-function Guardar(frm,concepto){
+function Guardar(frm,concepto,callback){
 	var codes= $(frm).find("textarea[tipo=code]");
 	for(var i=0; i<codes.length;i++){
 		codes[i].value=encodeURIComponent(codes[i].parentNode.editor.getDoc().getValue());
@@ -323,7 +324,7 @@ function Guardar(frm,concepto){
 	var datos = $(frm).serializeArray();
 	$.post('/logic/controlador.aspx?op=Guardar'+ '&seccion=generic&sobject=' + concepto, datos, function (xmlDoc) {
         if (GetVal(xmlDoc, "estatus") == 1){
-			alert(GetVal(xmlDoc,"mensaje"));            
+			if(callback) callback(xmlDoc);          
         }else{
 			tipo="danger";
 		}
@@ -331,73 +332,75 @@ function Guardar(frm,concepto){
 	});
 }
 
-function ObtenerItemForm(label,campo,tipo,nodoXml,datos){
+function ObtenerItemForm(label,campo,tipo,nodoXml,datos,es_editar){
 	if(!tipo) tipo="string";
 	var itemForm=document.createElement('div');
 	itemForm.className="form-floating";
 	var contenido="";
 	var table_ref,campo_ref;
 	if(datos && (table_ref=datos.getAttribute("tabla_ref"))){
-		alert(1);
 		tipo="select";
 	}
 	
-	switch(tipo){
-		case "hidden": {
-				contenido= '<input value="' + datos + '" type="hidden" class="form-control" name="' + campo + '" />';						  
-				itemForm.innerHTML=contenido;
-		}break;
-		case "int": {
-				contenido= '<input value="' + (nodoXml?GetVal(nodoXml,campo):"") + '" type="number" class="form-control" name="' + campo + '" id="' + campo + '" placeholder="' + label + '">'+
-						  '<label for="floatingPassword">' + label + '</label>';
-						  itemForm.innerHTML=contenido;
-		}break;		
-		case "string": {
-				contenido= '<input value="' + (nodoXml?GetVal(nodoXml,campo):"") + '" type="text" class="form-control" name="' + campo + '" id="' + campo + '" placeholder="' + label + '">'+
-					'<label for="floatingPassword">' + label + '</label>';
-					 itemForm.innerHTML=contenido;
-		}break;
-		case "select": {			
-			var filtros={};
-			if(datos.filtros) eval('filtros=' + datos.filtros + '();');
-			$.post(_ROOT_SYSTEM.url_base,{op:"ObtenerItems",seccion:"generic",concepto: table_ref}, function (xmlDoc) {	
-			//$.post(datos.url,filtros, function(xmlDoc) {
-				var items= $(xmlDoc).find("Response Items item");
-				contenido= document.createElement("select");
-				contenido.innerHTML="<option>Seleccione opción</option>";
-				contenido.className="form-control";
-				contenido.name=campo;
-				var item;
-				for(var i=0;i<items.length;i++){
-					item=document.createElement("option");
-					item.innerHTML=GetVal(items[i],"descripcion");
-					item.value=GetVal(items[i],datos.getAttribute("campo_ref"));
-					if(GetVal(nodoXml,campo)==item.value){ 
-						item.setAttribute("selected","selected");
-					}
-					contenido.appendChild(item);					
-				}
-				itemForm.appendChild(contenido);
-				etiqueta=CrearDom('label',label);
-				etiqueta.setAttribute('for',"floatingPassword");
-				itemForm.appendChild(etiqueta);
-			});
-			
-		}break;
-		case "html":case "jscript":case "css":case "sql":{
+	if(campo=="html"||campo=="jscript"|| campo=="javascript"|| campo=="css"|| campo=="sql"){
 			contenido= document.createElement("textarea");
 			contenido.setAttribute("tipo","code");
 			contenido.name=campo;
 			itemForm.className='form-control';
 			itemForm.innerHTML='<label class="label-field">' + campo + '</label>';
 			itemForm.appendChild(contenido);
-			itemForm.tipo=tipo;
+			itemForm.tipo=campo;
 			itemForm.callback=function(){				
-				this.editor=CodeMirror.fromTextArea(this.getElementsByTagName("textarea")[0],{mode: {name: this.tipo}});
-				this.editor.getDoc().setValue(GetVal(nodoXml,campo,true));
+				this.editor=CodeMirror.fromTextArea(this.getElementsByTagName("textarea")[0],{mode: {name: (campo=="html"?"htmlmixed":this.tipo)}});
+				var content=GetVal(nodoXml,campo,true);
+				this.editor.getDoc().setValue(content);
 			}
-		}break;
-	}	
+	}else{
+		switch(tipo){
+			case "hidden": {
+					contenido= '<input value="' + es_editar + '" type="hidden" class="form-control" name="' + campo + '" />';						  
+					itemForm.innerHTML=contenido;
+			}break;
+			case "int": {
+					contenido= '<input value="' + (nodoXml?GetVal(nodoXml,campo):"") + '" type="number" class="form-control" name="' + campo + '" id="' + campo + '" placeholder="' + label + '">'+
+							  '<label for="floatingPassword">' + label + '</label>';
+							  itemForm.innerHTML=contenido;
+			}break;		
+			case "string": {
+					contenido= '<input value="' + (nodoXml?GetVal(nodoXml,campo):"") + '" type="text" class="form-control" name="' + campo + '" id="' + campo + '" placeholder="' + label + '">'+
+						'<label for="floatingPassword">' + label + '</label>';
+						 itemForm.innerHTML=contenido;
+			}break;
+			case "select": {			
+				var filtros={};
+				if(datos.filtros) eval('filtros=' + datos.filtros + '();');
+				$.post(_ROOT_SYSTEM.url_base,{op:"ObtenerItems",seccion:"generic",concepto: table_ref}, function (xmlDoc) {	
+				//$.post(datos.url,filtros, function(xmlDoc) {
+					var items= $(xmlDoc).find("Response Items item");
+					contenido= document.createElement("select");
+					contenido.innerHTML="<option>Seleccione opción</option>";
+					contenido.value=null;
+					contenido.className="form-control";
+					contenido.name=campo;
+					var item;
+					for(var i=0;i<items.length;i++){
+						item=document.createElement("option");
+						item.innerHTML=GetVal(items[i],"descripcion");
+						item.value=GetVal(items[i],datos.getAttribute("campo_ref"));
+						if(GetVal(nodoXml,campo)==item.value){ 
+							item.setAttribute("selected","selected");
+						}
+						contenido.appendChild(item);					
+					}
+					itemForm.appendChild(contenido);
+					etiqueta=CrearDom('label',label);
+					etiqueta.setAttribute('for',"floatingPassword");
+					itemForm.appendChild(etiqueta);
+				});
+				
+			}break;			
+		}	
+	}
 	return itemForm;
 }
 
@@ -419,7 +422,7 @@ function ObtenerItems(concepto){
 		for(var i=0;i<data.length;i++){
 			item=CrearDom("li",GetVal(data[i],"descripcion"));
 			item.datai=data[i];
-			if(GetVal(data[i],"css")||GetVal(data[i],"html")||GetVal(data[i],"html")){
+			if(GetVal(data[i],"css")||GetVal(data[i],"html")||GetVal(data[i],"innerHTML")){
 				item.style.fontWeight="bold";
 			}
 			item.onclick=function(){
