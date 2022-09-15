@@ -191,7 +191,7 @@
 				INSERT INTO @tEstructura 
 				SELECT ORDINAL_POSITION gindex, column_name propiedad, CASE  WHEN C.tipo IS NOT NULL THEN C.tipo WHEN data_type like '%char' THEN 'string' WHEN data_type like 'bit' THEN 'bool' ELSE data_type END tipo, 
 				C.alias,C.alias_ref,C.script_ref,FK.table_ref,FK.campo_ref,
-				ISNULL(CHARACTER_MAXIMUM_LENGTH,0) longitud,CONVERT(BIT,CASE WHEN IS_NULLABLE='YES' THEN 0 ELSE 1 END) requerido 
+				ISNULL(CASE WHEN data_type like '%char' AND CHARACTER_MAXIMUM_LENGTH=-1 THEN 8000 ELSE CHARACTER_MAXIMUM_LENGTH END,0) longitud,CONVERT(BIT,CASE WHEN IS_NULLABLE='YES' THEN 0 ELSE 1 END) requerido 
 				FROM INFORMATION_SCHEMA.COLUMNS Campo LEFT OUTER JOIN EntidadesRelacionesDB E ON E.nombre like campo.table_name LEFT OUTER JOIN Meta_ColumnsDB C ON E.indice=C.Object_parent AND campo.column_name=C.nombre
 				LEFT OUTER JOIN (	
 					SELECT
