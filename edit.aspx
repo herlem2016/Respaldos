@@ -15,7 +15,6 @@
     <script src="js/root.js?v=1.2"></script>
 	<link rel="stylesheet" href="reveal/dist/reveal.css">
 	<script src="reveal/dist/reveal.js"></script>
-	<link rel="stylesheet" href="reveal/dist/theme/white.css" id="theme">
 	<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 	
 	<style>
@@ -45,7 +44,7 @@
 		}
 		
 		$(function(){	
-			Reveal.initialize({history: true,transition: 'slide',width:"80%", height:"100%"});
+			Reveal.initialize({history: true,transition: 'slide',width:"100%", height:"100%"});
 			AddCatalogoReveal(document.getElementById("cinicial"));			
 		});
 		 
@@ -73,8 +72,8 @@
 		
 	<!--Fin-->
 	<style>
-		html,body{height:100%;margin:0px;}
-		body.*{font-family:Roboto Verdana;color:#444;}
+		html,body{height:100%;margin:0px;background-color:#333;color:#ddd;}
+		body.*{font-family:Roboto Verdana;}
 		.wrap{height:100%;width:100%;}
 		.wrap .list,.wrap .group,.wrap .vista{height:100%;float:left;}
 		.wrap .list .objetos{height:20%;margin:0px;}
@@ -89,7 +88,8 @@
 		.banner { background: #ffc; padding: 6px; border-bottom: 2px solid silver; text-align: center }
 		div.buttons{height:12%;width:100%;}
 		div.buttons button{float:right;margin-right:20px;margin-top:10px;}
-		div.edit{width:100%;height:85%;overflow:auto;clear:right;}
+		div.buttons button.btn-primary{float:left;margin-left:5%;}
+		div.edit{width:100%;height:90%;overflow:auto;clear:right;}
 		ul.objetos.sel{width:50%;float:left;}
 		section{border:0px;margin:0px !important;}
 		section h1{font-size:1em !important;text-align:center;}
@@ -106,16 +106,21 @@
 		<div class="wrap">			
 			<div class="group">
 				<div class="buttons">
-					<ul class="objetos sel">
-						<li id="cinicial" concepto="COM_Proyectos" visibles="'descripcion'" onclick="AddCatalogoReveal(this);"><label class="pro">Proyectos</label></li>
-						<li concepto="META_TiposUnidadUI" visibles="'descripcion'"onclick="AddCatalogoReveal(this);" ><label class="comp">Componentes</label></li>
-						<li concepto="UI_Layouts" visibles="'descripcion'" onclick="AddCatalogoReveal(this);" ><label class="lay">Layouts</label></li>
-						<li concepto="UI_Vistas" visibles="'descripcion'" onclick="AddCatalogoReveal(this);" ><label class="lay">Views</label></li>
-					</ul>
-					<button style="margin-left:40px;" onclick="EliminarItem_();">Eliminar</button>
-					<button onclick="GuardarEdicion();">Guardar</button>
-					<button onclick="CrearForm(true);">Editar</button>
-					<button onclick="CrearForm(false);">Nuevo</button>
+					<div class="dropdown">
+						<button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButtonSM" data-bs-toggle="dropdown" aria-expanded="false">
+						  Objetos editables
+						</button>
+						<ul class="dropdown-menu" aria-labelledby="dropdownMenuButtonSM">
+							<li id="cinicial" concepto="COM_Proyectos" visibles="'descripcion'" onclick="AddCatalogoReveal(this);"><label class="dropdown-item">Proyectos</label></li>
+							<li concepto="META_TiposUnidadUI" visibles="'descripcion'"onclick="AddCatalogoReveal(this);" ><label class="dropdown-item">Componentes</label></li>
+							<li concepto="UI_Layouts" visibles="'descripcion'" onclick="AddCatalogoReveal(this);" ><label class="dropdown-item">Layouts</label></li>
+							<li concepto="UI_Vistas" visibles="'descripcion'" onclick="AddCatalogoReveal(this);" ><label class="dropdown-item">Views</label></li>
+						</ul>
+					</div>
+					<button class="btn btn-danger"  style="margin-left:40px;" onclick="EliminarItem_();">Eliminar</button>
+					<button class="btn btn-success" onclick="GuardarEdicion();">Guardar</button>
+					<button class="btn btn-secondary" onclick="CrearForm(true);">Editar</button>
+					<button class="btn btn-warning" onclick="CrearForm(false);">Nuevo</button>
 				</div>
 				<div class="edit" id="edit">
 					<div class="reveal"><div class="slides" id="views-control"></div></div>
