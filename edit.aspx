@@ -72,7 +72,7 @@
 		
 	<!--Fin-->
 	<style>
-		html,body{height:100%;margin:0px;background-color:#333;color:#ddd;}
+		html,body{height:100%;margin:0px;background-color:#ddd;}
 		body.*{font-family:Roboto Verdana;}
 		.wrap{height:100%;width:100%;}
 		.wrap .list,.wrap .group,.wrap .vista{height:100%;float:left;}
@@ -86,7 +86,7 @@
 		.CodeMirror { height: 100%; border: 1px solid #ddd; }
 		.CodeMirror pre { padding-left: 7px; line-height: 1.25; }
 		.banner { background: #ffc; padding: 6px; border-bottom: 2px solid silver; text-align: center }
-		div.buttons{height:12%;width:100%;}
+		div.buttons{height:12%;width:100%;box-shadow: 1px 1px 6px 0px #0b5ed7;background-color:#eee;}
 		div.buttons button{float:right;margin-right:20px;margin-top:10px;}
 		div.buttons button.btn-primary{float:left;margin-left:5%;}
 		div.edit{width:100%;height:90%;overflow:auto;clear:right;}

@@ -336,19 +336,25 @@ function ObtenerItemForm(label,campo,tipo,nodoXml,datos,es_editar){
 	if(!tipo) tipo="string";
 	var itemForm=document.createElement('div');
 	itemForm.className="form-floating";
-	var contenido="";
+	var contenido="", gindex="";
 	var table_ref,campo_ref;
 	if(datos && (table_ref=datos.getAttribute("tabla_ref"))){
 		tipo="select";
+	}
+	if(datos && (table_ref=datos.getAttribute("gindex"))){
+		gindex=datos.getAttribute("gindex");
 	}
 	
 	if(campo=="html"||campo=="jscript"|| campo=="javascript"|| campo=="css"|| campo=="sql"){
 			contenido= document.createElement("textarea");
 			contenido.setAttribute("tipo","code");
 			contenido.name=campo;
+			var wrap= document.createElement("div");
+			wrap.id='form-control-'+ campo + "-" + gindex;
+			wrap.appendChild(contenido);
 			itemForm.className='form-control';
-			itemForm.innerHTML='<label class="label-field">' + campo + '</label>';
-			itemForm.appendChild(contenido);
+			itemForm.innerHTML='<label data-bs-toggle="collapse" data-bs-target="#' + wrap.id+ '" class="label-field" style="display:block;cursor:pointer;" onclick="document.getElementById(\'' + wrap.id + '\').className=\'collapse\'">' + campo + '</label>';			
+			itemForm.appendChild(wrap);
 			itemForm.tipo=campo;
 			itemForm.callback=function(){				
 				this.editor=CodeMirror.fromTextArea(this.getElementsByTagName("textarea")[0],{mode: {name: (campo=="html"?"htmlmixed":this.tipo)}});
