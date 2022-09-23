@@ -14,6 +14,7 @@
 	<link rel="stylesheet" href="assets/dist/css/bootstrap.min.css">
     <script src="js/root.js?v=1.2"></script>
 	<link rel="stylesheet" href="reveal/dist/reveal.css">
+	<link rel="stylesheet" href="reveal/dist/theme/white.css" id="theme">
 	<script src="reveal/dist/reveal.js"></script>
 	<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 	
@@ -79,7 +80,7 @@
 		.wrap .list .objetos{height:20%;margin:0px;}
 		.wrap .list .list-components{height:80%;}
 		.wrap .edit textarea{min-height:300px;}
-		.wrap .group{width:70%;}		
+		.wrap .group{width:70%;border-right:1px solid #0b5ed7;}		
 		.wrap .vista{width:30%;}				
 		.wrap .editor textarea,.wrap .vista iframe{width:100%;height:100%;float:left;}
 		

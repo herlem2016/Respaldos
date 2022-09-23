@@ -238,6 +238,7 @@ function MostrarForm(concepto,idForm,nodoXml,es_editar){
 	$.post(_ROOT_SYSTEM.url_base,{op:"ObtenerEstructuraTable",seccion:"generic",sobject: concepto}, function (xmlConcepto) {		
 		var campos= $(xmlConcepto).find("Entidad > Campo");
 		var _form_dom=(typeof(idForm)=="object"? idForm: document.getElementById(idForm));		
+		_form_dom.innerHTML="";
 		if(_form_dom.tagName.toLowerCase()!="form"){
 			form_dom=CrearDom("form");
 			_form_dom.appendChild(form_dom);
@@ -341,7 +342,7 @@ function ObtenerItemForm(label,campo,tipo,nodoXml,datos,es_editar){
 	if(datos && (table_ref=datos.getAttribute("tabla_ref"))){
 		tipo="select";
 	}
-	if(datos && (table_ref=datos.getAttribute("gindex"))){
+	if(datos && datos.getAttribute("gindex")){
 		gindex=datos.getAttribute("gindex");
 	}
 	
