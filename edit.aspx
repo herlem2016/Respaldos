@@ -16,6 +16,7 @@
 	<link rel="stylesheet" href="reveal/dist/reveal.css">
 	<link rel="stylesheet" href="reveal/dist/theme/white.css" id="theme">
 	<script src="reveal/dist/reveal.js"></script>
+	<script src="spliter/spliter.js"></script>
 	<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 	
 	<style>
@@ -23,6 +24,7 @@
 		.sel li,.sel li label{cursor:pointer;}
 		.sel li:active{background-color:#d9f;font-weight:bolder;}
 		section.present{top:0px !important;}
+		.vsplitbar {width: 4px;}
 	</style>
 	<!--Editor-->		
 		<link rel=stylesheet href="codemirror-5.65.5/lib/codemirror.css">
@@ -48,11 +50,17 @@
 			Reveal.initialize({history: true,transition: 'slide',width:"100%", height:"100%"});
 			AddCatalogoReveal(document.getElementById("cinicial"));			
 		});
-		 
+		
+		$().ready(function () {
+		   $("#spliter").splitter();
+		});
+
 		 function GuardarEdicion(){
 			var concepto= _conceptoActual;
 			var _form= $(".present form")[0];
-			Guardar(_form, concepto);
+			Guardar(_form, concepto,function(response){
+				window.frames[0].location.reload();
+			});
 		 }
 		 
 		 function EliminarItem_(){
@@ -76,12 +84,12 @@
 		html,body{height:100%;margin:0px;background-color:#ddd;}
 		body.*{font-family:Roboto Verdana;}
 		.wrap{height:100%;width:100%;}
-		.wrap .list,.wrap .group,.wrap .vista{height:100%;float:left;}
+		.wrap .list,.wrap .group,.wrap .vista{height:100%;}
 		.wrap .list .objetos{height:20%;margin:0px;}
 		.wrap .list .list-components{height:80%;}
 		.wrap .edit textarea{min-height:300px;}
-		.wrap .group{width:70%;border-right:1px solid #0b5ed7;}		
-		.wrap .vista{width:30%;}				
+		.wrap .group{border-right:1px solid #0b5ed7;}		
+		.wrap .vista{background-color:blue;padding-left:50px;}				
 		.wrap .editor textarea,.wrap .vista iframe{width:100%;height:100%;float:left;}
 		
 		.CodeMirror { height: 100%; border: 1px solid #ddd; }
@@ -104,8 +112,8 @@
 	
 </head>
 <body>        
-		<div class="wrap">			
-			<div class="group">
+		<div class="wrap" id="spliter"><!--No poner class row aquí porque echa a perder la funcionalidad..--> 			
+			<div class="group col-md-6" >
 				<div class="buttons">
 					<div class="dropdown">
 						<button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButtonSM" data-bs-toggle="dropdown" aria-expanded="false">
@@ -127,7 +135,7 @@
 					<div class="reveal"><div class="slides" id="views-control"></div></div>
 				</div>
 			</div>
-			<div class="vista"><iframe src="index.aspx"/></div>	
+			<div class="vista col-md-6"><iframe src="index.aspx"/></div>	
 		</div>
 </body>
 </html> 
