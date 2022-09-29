@@ -67,7 +67,7 @@
 				propiedad=ds.Tables[0].Rows[i]["propiedad"].ToString();
 				parametros[i,0]=propiedad;
 				parametros[i,1]=propiedad;	
-				if(propiedad=="css"||propiedad=="html"||propiedad=="jscript"||propiedad=="javascript"||propiedad=="sql"){
+				if(propiedad=="css"||propiedad=="html"||propiedad=="innerHTML"||propiedad=="jscript"||propiedad=="javascript"||propiedad=="sql"){
 					contenido=HttpUtility.UrlDecode(Request[propiedad]);					
 				}else{
 					contenido=Request[propiedad];

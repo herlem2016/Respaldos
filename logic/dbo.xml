@@ -21,7 +21,7 @@
         <![CDATA[
 			DECLARE @XmlData XML;
 			SET @XmlData = (
-				SELECT tipoUnidadUI.indice '@tipoUnidadUI', tipoUnidadUI.item_repeat,tipoUnidadUI.wrap,  tipoUnidadUI.descripcion, tipoUnidadUI.innerHTML,tipoUnidadUI.css,tipoUnidadUI.javascript, propiedad.descripcion, valor 
+				SELECT tipoUnidadUI.indice '@tipoUnidadUI',tipoUnidadUI.class, tipoUnidadUI.item_repeat,tipoUnidadUI.wrap,  tipoUnidadUI.descripcion, tipoUnidadUI.innerHTML,tipoUnidadUI.css,tipoUnidadUI.javascript, propiedad.descripcion, valor 
 				,dbo.AnidacionUI(tipoUnidadUI.indice) 
 				FROM (SELECT item tipoUnidadUI FROM dbo.Split(@componentes,',')) unidadUI 
 				INNER JOIN [META_TiposUnidadUI] tipoUnidadUI ON unidadUI.tipoUnidadUI=tipoUnidadUI.indice 
