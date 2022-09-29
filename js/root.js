@@ -99,7 +99,7 @@ _ROOT_SYSTEM.ResolverUnaUnidadUI= function(unidadUI,xmlUnidadUI){
 _ROOT_SYSTEM.ProcesarUnaUnidadUI= function(xmlUnidadUI, data){
 	var style=GetVal(xmlUnidadUI,"css");if(style) document.head.appendChild(CrearDom("style",style));
 	var script=GetVal(xmlUnidadUI,"javascript");if(script) document.head.appendChild(CrearDom("script",script));
-	var nuevo_dom= document.createElement("div");
+	var nuevo_dom= document.createElement("div");	
 	nuevo_dom.className= GetVal(xmlUnidadUI,"class");	
 	nuevo_dom.innerHTML=GetVal(xmlUnidadUI,"innerHTML",true);
 	var wrap=$(xmlUnidadUI).children("wrap");		
@@ -193,9 +193,12 @@ function VerCatalogo(sobject, contenedor, visibles, callback){
 		titulo.innerHTML=sobject;
 		contenedor.appendChild(titulo);
 		var headers= $(xmlDoc).find("Response Entidad Campo");
+		$.each(visibles,function(index,campo){
+			visibles[index]= "Response Entidad Campo[propiedad='" + campo +"']";
+		});
 		if(visibles.length>0){
 			for(var i=0; i<headers.length;i++){
-				headers= $(xmlDoc).find("Response Entidad Campo[propiedad=" + visibles[i] + "]");
+				headers= $(xmlDoc).find(visibles.join(","));
 			}
 		}
 		var datos= $(xmlDoc).find("Items item");
@@ -320,9 +323,12 @@ function SeleccionarItem(){
 function Guardar(frm,concepto,callback){
 	var codes= $(frm).find("textarea[tipo=code]");
 	for(var i=0; i<codes.length;i++){
-		codes[i].value=encodeURIComponent(codes[i].parentNode.editor.getDoc().getValue());
+		codes[i].value=encodeURIComponent(codes[i].parentNode.parentNode.editor.getDoc().getValue());
 	}	
 	var datos = $(frm).serializeArray();
+	datos=$.grep(datos,function(field){
+		return (field.value!=null && field.value!="null"); 
+	});
 	$.post('/logic/controlador.aspx?op=Guardar'+ '&seccion=generic&sobject=' + concepto, datos, function (xmlDoc) {
         if (GetVal(xmlDoc, "estatus") == 1){
 			if(callback) callback(xmlDoc);          
@@ -346,7 +352,7 @@ function ObtenerItemForm(label,campo,tipo,nodoXml,datos,es_editar){
 		gindex=datos.getAttribute("gindex");
 	}
 	
-	if(campo=="html"||campo=="jscript"|| campo=="javascript"|| campo=="css"|| campo=="sql"){
+	if(campo=="html"||campo=="innerHTML"||campo=="jscript"|| campo=="javascript"|| campo=="css"|| campo=="sql"){
 			contenido= document.createElement("textarea");
 			contenido.setAttribute("tipo","code");
 			contenido.name=campo;
@@ -358,7 +364,7 @@ function ObtenerItemForm(label,campo,tipo,nodoXml,datos,es_editar){
 			itemForm.appendChild(wrap);
 			itemForm.tipo=campo;
 			itemForm.callback=function(){				
-				this.editor=CodeMirror.fromTextArea(this.getElementsByTagName("textarea")[0],{mode: {name: (campo=="html"?"htmlmixed":this.tipo)}});
+				this.editor=CodeMirror.fromTextArea(this.getElementsByTagName("textarea")[0],{mode: {name: ((campo=="html"||campo=="innerHTML")?"htmlmixed":this.tipo)}});
 				var content=GetVal(nodoXml,campo,true);
 				this.editor.getDoc().setValue(content);
 			}
@@ -386,7 +392,7 @@ function ObtenerItemForm(label,campo,tipo,nodoXml,datos,es_editar){
 					var items= $(xmlDoc).find("Response Items item");
 					contenido= document.createElement("select");
 					contenido.innerHTML="<option>Seleccione opción</option>";
-					contenido.value=null;
+					$(contenido).find("option")[0].value=null;
 					contenido.className="form-control";
 					contenido.name=campo;
 					var item;
@@ -415,6 +421,9 @@ function MarcarItem(datai,itemUI, callback,concepto){
 	itemUI.datai=datai;
 	if(GetVal(datai,"css")||GetVal(datai,"html")||GetVal(datai,"html")){
 		itemUI.style.fontWeight="bold";
+	}
+	if(callback){
+		callback(itemUI,datai);
 	}
 }
 

@@ -42,7 +42,11 @@
 		
 		function AddCatalogoReveal(uiItem){
 			CrearPantalla("views-control",function(parentNode){
-				VerCatalogo(uiItem.getAttribute("concepto"),parentNode,uiItem.getAttribute("visibles").split(","), CrearForm);
+				VerCatalogo(uiItem.getAttribute("concepto"),parentNode,uiItem.getAttribute("visibles").split(","), function(itemUI,datai){
+					var descripcion= $(itemUI).find("td")[0].innerHTML;
+					var link=GetVal(datai,"link");
+					if(link) $(itemUI).find("td")[0].innerHTML="<a href='" + link + "' target='_blank'>" + descripcion + "</td>";
+				});
 			}); 
 		}
 		
@@ -120,10 +124,10 @@
 						  Objetos editables
 						</button>
 						<ul class="dropdown-menu" aria-labelledby="dropdownMenuButtonSM">
-							<li id="cinicial" concepto="COM_Proyectos" visibles="'descripcion'" onclick="AddCatalogoReveal(this);"><label class="dropdown-item">Proyectos</label></li>
-							<li concepto="META_TiposUnidadUI" visibles="'descripcion'"onclick="AddCatalogoReveal(this);" ><label class="dropdown-item">Componentes</label></li>
-							<li concepto="UI_Layouts" visibles="'descripcion'" onclick="AddCatalogoReveal(this);" ><label class="dropdown-item">Layouts</label></li>
-							<li concepto="UI_Vistas" visibles="'descripcion'" onclick="AddCatalogoReveal(this);" ><label class="dropdown-item">Views</label></li>
+							<li id="cinicial" concepto="COM_Proyectos" visibles="descripcion" onclick="AddCatalogoReveal(this);"><label class="dropdown-item">Proyectos</label></li>
+							<li concepto="META_TiposUnidadUI" visibles="indice,descripcion"onclick="AddCatalogoReveal(this);" ><label class="dropdown-item">Componentes</label></li>
+							<li concepto="UI_Layouts" visibles="descripcion" onclick="AddCatalogoReveal(this);" ><label class="dropdown-item">Layouts</label></li>
+							<li concepto="UI_Vistas" visibles="descripcion" onclick="AddCatalogoReveal(this);" ><label class="dropdown-item">Views</label></li>
 						</ul>
 					</div>
 					<button class="btn btn-danger"  style="margin-left:40px;" onclick="EliminarItem_();">Eliminar</button>
