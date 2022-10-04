@@ -102,6 +102,27 @@ _ROOT_SYSTEM.ProcesarUnaUnidadUI= function(xmlUnidadUI, data){
 	var nuevo_dom= document.createElement("div");	
 	nuevo_dom.className= GetVal(xmlUnidadUI,"class");	
 	nuevo_dom.innerHTML=GetVal(xmlUnidadUI,"innerHTML",true);
+	data.componentBase=nuevo_dom;
+	var subitem;	
+	try{
+		eval("Constructor_" + xmlUnidadUI.getAttribute("tipoUnidadUI") + "(nuevo_dom,data);");
+		for(var subitem in data){
+			for(var property in data[subitem]){
+				try{
+					console.log(subitem+"."+property + ":" + data[subitem][property]);
+					//if(typeof(data[subitem][property])=="function"){
+					//	var fn_=data[subitem][property];
+					//	$(nuevo_dom).find("[node_ui=" + subitem + "]")[0][property]=function(){fn_(this,nuevo_dom);};
+					//}else{
+						$(nuevo_dom).find("[node_ui=" + subitem + "]")[0][property]=data[subitem][property];
+					//}
+				}catch(e){console.log(e.message);}
+			}
+		}
+	}catch(e){
+		alert(e.message);
+	}
+	
 	var wrap=$(xmlUnidadUI).children("wrap");		
 	if(wrap.length>0) _ROOT_SYSTEM.ProcesarRepeticionItem(nuevo_dom.children[0],data,xmlUnidadUI);		
 	//Obtenemos las propiedades del TipoUI
