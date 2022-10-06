@@ -105,7 +105,6 @@ _ROOT_SYSTEM.ProcesarUnaUnidadUI= function(xmlUnidadUI, data){
 	var nuevo_dom= document.createElement("div");	
 	nuevo_dom.className= GetVal(xmlUnidadUI,"class");	
 	nuevo_dom.innerHTML=GetVal(xmlUnidadUI,"innerHTML",true);
-	data.componentBase=nuevo_dom;
 	var subitem;	
 	try{
 		eval("Constructor_" + xmlUnidadUI.getAttribute("tipoUnidadUI") + "(nuevo_dom,data);");
@@ -117,15 +116,16 @@ _ROOT_SYSTEM.ProcesarUnaUnidadUI= function(xmlUnidadUI, data){
 					//	var fn_=data[subitem][property];
 					//	$(nuevo_dom).find("[node_ui=" + subitem + "]")[0][property]=function(){fn_(this,nuevo_dom);};
 					//}else{
-						$(nuevo_dom).find("[node_ui=" + subitem + "]")[0][property]=data[subitem][property];
+					var node_ui=$(nuevo_dom).find("[node_ui=" + subitem + "]")[0];
+					if(node_ui){node_ui[property]=data[subitem][property];}
 					//}
 				}catch(e){console.log(e.message);}
 			}
 		}
 	}catch(e){
 		alert(e.message);
-	}
-	
+	}	
+	data.componentBase=nuevo_dom;
 	var wrap=$(xmlUnidadUI).children("wrap");		
 	if(wrap.length>0) _ROOT_SYSTEM.ProcesarRepeticionItem(nuevo_dom.children[0],data,xmlUnidadUI);		
 	//Obtenemos las propiedades del TipoUI
@@ -378,8 +378,8 @@ function ObtenerItemForm(label,campo,tipo,nodoXml,datos,es_editar){
 	if(datos && datos.getAttribute("gindex")){
 		gindex=datos.getAttribute("gindex");
 	}
-	
-	if(campo=="html"||campo=="innerHTML"||campo=="jscript"|| campo=="javascript"|| campo=="css"|| campo=="sql"){
+	if(tipo=="text" && campo.includes("sql")){tipo="sql";}
+	if(campo=="html"||campo=="innerHTML"||campo=="jscript"|| campo=="javascript"|| campo=="css"|| tipo=="sql"){
 			contenido= document.createElement("textarea");
 			contenido.setAttribute("tipo","code");
 			contenido.name=campo;
@@ -387,11 +387,17 @@ function ObtenerItemForm(label,campo,tipo,nodoXml,datos,es_editar){
 			wrap.id='form-control-'+ campo + "-" + gindex;
 			wrap.appendChild(contenido);
 			itemForm.className='form-control';
-			itemForm.innerHTML='<label data-bs-toggle="collapse" data-bs-target="#' + wrap.id+ '" class="label-field" style="display:block;cursor:pointer;" onclick="document.getElementById(\'' + wrap.id + '\').className=\'collapse\'">' + campo + '</label>';			
+			itemForm.innerHTML='<label data-bs-toggle="collapse" data-bs-target="#' + wrap.id+ '" class="label-field" style="display:block;cursor:pointer;" onclick="document.getElementById(\'' + wrap.id + '\').className=\'collapse\'">' + campo + ":" + tipo + '</label>';			
 			itemForm.appendChild(wrap);
-			itemForm.tipo=campo;
-			itemForm.callback=function(){				
-				this.editor=CodeMirror.fromTextArea(this.getElementsByTagName("textarea")[0],{mode: {name: ((campo=="html"||campo=="innerHTML")?"htmlmixed":this.tipo)}});
+			itemForm.tipo=(tipo=="sql"?"text/x-" + tipo:campo);
+			console.log("Tipo:" + itemForm.tipo);
+			itemForm.callback=function(){	
+				this.editor=CodeMirror.fromTextArea(this.getElementsByTagName("textarea")[0],{
+					mode: {name: ((campo=="html"||campo=="innerHTML")?"htmlmixed":this.tipo),
+					indentWithTabs: true,
+					smartIndent: true,
+					matchBrackets : true
+				}});
 				var content=GetVal(nodoXml,campo,true);
 				this.editor.getDoc().setValue(content);
 			}

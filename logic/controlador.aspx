@@ -64,16 +64,16 @@
 		if(ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0){
 			parametros= new object[ds.Tables[0].Rows.Count,6];
 			for(int i=0; i<ds.Tables[0].Rows.Count; i++){
+				tipo=ds.Tables[0].Rows[i]["tipo"].ToString();
 				propiedad=ds.Tables[0].Rows[i]["propiedad"].ToString();
 				parametros[i,0]=propiedad;
 				parametros[i,1]=propiedad;	
-				if(propiedad=="css"||propiedad=="html"||propiedad=="innerHTML"||propiedad=="jscript"||propiedad=="javascript"||propiedad=="sql"){
+				if(propiedad=="css"||propiedad=="html"||propiedad=="innerHTML"||propiedad=="jscript"||propiedad=="javascript"||(propiedad.Contains("sql")&&tipo=="text")){
 					contenido=HttpUtility.UrlDecode(Request[propiedad]);					
 				}else{
 					contenido=Request[propiedad];
 				}
 				parametros[i,2]=contenido;
-				tipo=ds.Tables[0].Rows[i]["tipo"].ToString();				
 				parametros[i,3]=bool.Parse(ds.Tables[0].Rows[i]["requerido"].ToString());
 				parametros[i,4]=(tipo=="css"||tipo=="html"||tipo=="jscript"||tipo=="sql"?"string":tipo);
 				longitud=Int32.Parse(ds.Tables[0].Rows[i]["longitud"].ToString());
