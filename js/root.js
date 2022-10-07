@@ -367,19 +367,16 @@ function Guardar(frm,concepto,callback){
 }
 
 function ObtenerItemForm(label,campo,tipo,nodoXml,datos,es_editar){
-	if(!tipo) tipo="string";
+	var table_ref=datos?datos.getAttribute("tabla_ref"):null;
+	var campo_ref;	
+	var oTipo=ObtenerTipo(campo, tipo, table_ref);
 	var itemForm=document.createElement('div');
 	itemForm.className="form-floating";
-	var contenido="", gindex="";
-	var table_ref,campo_ref;
-	if(datos && (table_ref=datos.getAttribute("tabla_ref"))){
-		tipo="select";
-	}
+	var contenido="", gindex="";	
 	if(datos && datos.getAttribute("gindex")){
 		gindex=datos.getAttribute("gindex");
 	}
-	if(tipo=="text" && campo.includes("sql")){tipo="sql";}
-	if(campo=="html"||campo=="innerHTML"||campo=="jscript"|| campo=="javascript"|| campo=="css"|| tipo=="sql"){
+	if(oTipo.esCode){
 			contenido= document.createElement("textarea");
 			contenido.setAttribute("tipo","code");
 			contenido.name=campo;
@@ -387,22 +384,23 @@ function ObtenerItemForm(label,campo,tipo,nodoXml,datos,es_editar){
 			wrap.id='form-control-'+ campo + "-" + gindex;
 			wrap.appendChild(contenido);
 			itemForm.className='form-control';
-			itemForm.innerHTML='<label data-bs-toggle="collapse" data-bs-target="#' + wrap.id+ '" class="label-field" style="display:block;cursor:pointer;" onclick="document.getElementById(\'' + wrap.id + '\').className=\'collapse\'">' + campo + ":" + tipo + '</label>';			
+			itemForm.innerHTML='<label data-bs-toggle="collapse" data-bs-target="#' + wrap.id+ '" class="label-field" style="display:block;cursor:pointer;" onclick="document.getElementById(\'' + wrap.id + '\').className=\'collapse\'">' + campo + ":" + oTipo.tipo + '</label>';			
 			itemForm.appendChild(wrap);
-			itemForm.tipo=(tipo=="sql"?"text/x-" + tipo:campo);
-			console.log("Tipo:" + itemForm.tipo);
-			itemForm.callback=function(){	
+			itemForm.campo=campo;
+			itemForm.tipo=oTipo.tipo;
+			itemForm.nodoXml=nodoXml;
+			itemForm.callback=function(){
 				this.editor=CodeMirror.fromTextArea(this.getElementsByTagName("textarea")[0],{
-					mode: {name: ((campo=="html"||campo=="innerHTML")?"htmlmixed":this.tipo),
+					mode: this.tipo,
 					indentWithTabs: true,
 					smartIndent: true,
 					matchBrackets : true
-				}});
-				var content=GetVal(nodoXml,campo,true);
+				});
+				var content=GetVal(this.nodoXml,this.campo,true);
 				this.editor.getDoc().setValue(content);
 			}
 	}else{
-		switch(tipo){
+		switch(oTipo.tipo){
 			case "hidden": {
 					contenido= '<input value="' + es_editar + '" type="hidden" class="form-control" name="' + campo + '" />';						  
 					itemForm.innerHTML=contenido;
@@ -450,6 +448,28 @@ function ObtenerItemForm(label,campo,tipo,nodoXml,datos,es_editar){
 	return itemForm;
 }
 
+function ObtenerTipo(campo, tipo, table_ref){
+	var resp={esCode:false,tipo:tipo};
+	if(!tipo){
+		resp.tipo="string";
+	}else if(table_ref){
+		resp.tipo="select";
+	}else{
+		var lengs=["html","css","javascript","sql"];
+		for(var i=0;i<lengs.length;i++){
+			if(new RegExp(lengs[i],"gi").test(campo)){
+				resp.esCode=true;
+				if(lengs[i]=="html"){
+					resp.tipo="htmlmixed";
+				}else{
+					resp.tipo=lengs[i];
+				}
+				break;
+			}
+		}
+	}
+	return resp;
+}
 function MarcarItem(datai,itemUI, callback,concepto){	
 	itemUI.datai=datai;
 	if(GetVal(datai,"css")||GetVal(datai,"html")||GetVal(datai,"html")){
