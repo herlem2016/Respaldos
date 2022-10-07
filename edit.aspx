@@ -31,6 +31,7 @@
 		<link rel=stylesheet href="codemirror-5.65.5/doc/docs.css">
 		<script src="codemirror-5.65.5/lib/codemirror.js"></script>
 		<script src="codemirror-5.65.5/mode/xml/xml.js"></script>
+		<script src="codemirror-5.65.5/mode/sql/sql.js"></script>
 		<script src="codemirror-5.65.5/mode/javascript/javascript.js"></script>
 		<script src="codemirror-5.65.5/mode/css/css.js"></script>
 		<script src="codemirror-5.65.5/mode/htmlmixed/htmlmixed.js"></script>
