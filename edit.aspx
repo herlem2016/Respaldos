@@ -131,7 +131,7 @@
 							<li concepto="META_TiposUnidadUI" visibles="indice,descripcion"onclick="AddCatalogoReveal(this);" ><label class="dropdown-item">Componentes</label></li>
 							<li concepto="UI_Layouts" visibles="descripcion" onclick="AddCatalogoReveal(this);" ><label class="dropdown-item">Layouts</label></li>
 							<li concepto="UI_Vistas" visibles="descripcion" onclick="AddCatalogoReveal(this);" ><label class="dropdown-item">Views</label></li>
-							<li concepto="OP_OperacionesCX" visibles="indice,nombre" onclick="AddCatalogoReveal(this);"><label class="dropdown-item">OPX's</label></li>
+							<li concepto="OP_OperacionesCX" visibles="indice,descripcion" onclick="AddCatalogoReveal(this);"><label class="dropdown-item">OPX's</label></li>
 							<li concepto="META_Rel_Tablas" visibles="indice,referencia,destino" onclick="AddCatalogoReveal(this);"><label class="dropdown-item">Derivaciones</label></li>
 						</ul>
 					</div>

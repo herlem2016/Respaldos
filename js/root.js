@@ -288,7 +288,20 @@ function MostrarForm(concepto,idForm,nodoXml,es_editar){
 				form_dom.appendChild(item);
 				if(item.callback) item.callback();
 			}
-		}		
+		}	
+		
+		$.post(_ROOT_SYSTEM.url_base,{op:"RelacionesEstructuraTable",seccion:"generic",sobject: concepto}, function (xmlRelaciones) {	
+			var campos= $(xmlRelaciones).find("Entidad > Relacion");
+			var wrap= document.createElement("div");
+			wrap.className="list-group";
+			form_dom.appendChild(wrap);
+			for(var i=0;i<campos.length;i++){
+				if(!campos[i].aux){
+					item=ObtenerItemForm(campos[i].getAttribute("propiedad"), campos[i].getAttribute("tabla_ref"), campos[i].getAttribute("tipo"),nodoXml,campos[i]);
+					wrap.appendChild(item);
+				}
+			}
+		});			
 	});
 }
 
@@ -415,6 +428,7 @@ function ObtenerItemForm(label,campo,tipo,nodoXml,datos,es_editar){
 						'<label for="floatingPassword">' + label + '</label>';
 						 itemForm.innerHTML=contenido;
 			}break;
+			
 			case "select": {			
 				var filtros={};
 				if(datos.filtros) eval('filtros=' + datos.filtros + '();');
@@ -442,6 +456,10 @@ function ObtenerItemForm(label,campo,tipo,nodoXml,datos,es_editar){
 					itemForm.appendChild(etiqueta);
 				});
 				
+			}break;
+			case "rel": {
+					contenido= '<a class="list-group-item list-group-item-action" concepto="'+ campo + '" visibles="indice,descripcion" onclick="AddCatalogoReveal(this);">' + label + "</a>";
+					itemForm.innerHTML=contenido;
 			}break;			
 		}	
 	}
@@ -452,7 +470,7 @@ function ObtenerTipo(campo, tipo, table_ref){
 	var resp={esCode:false,tipo:tipo};
 	if(!tipo){
 		resp.tipo="string";
-	}else if(table_ref){
+	}else if(table_ref && tipo!="rel"){
 		resp.tipo="select";
 	}else{
 		var lengs=["html","css","javascript","sql"];

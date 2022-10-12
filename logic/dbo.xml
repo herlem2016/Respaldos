@@ -206,10 +206,16 @@
 		</sql>
 	</EstructuraTable>
 	<RelacionesEstructuraTable>
+		<campo leyenda="Nombre de Objeto" db_nombre="sobject" form_nombre="sobject" requerido="true" charsize="100" tipo="string"/>
 		<sql>
 			<![CDATA[
-				SELECT NULL, referencia,'rel',destino,campo_destino,NULL,requerido
-				FROM META_Rel_Tablas WHERE origen=@sobject
+				DECLARE @XmlData XML;
+				SET @XmlData = (
+					SELECT NULL '@gindex',referencia '@propiedad', 'rel' '@tipo', NULL '@longitud', requerido '@requerido', destino '@tabla_ref',campo_destino '@campo_ref'						
+					FROM META_Rel_Tablas WHERE origen=@sobject
+					FOR XML PATH('Relacion'), ROOT('Entidad')
+				);
+				SELECT @XmlData AS xmldoc;				
 			]]>
 		</sql>
 	</RelacionesEstructuraTable>
