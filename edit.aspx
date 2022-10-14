@@ -41,16 +41,6 @@
 		var _ROOT_SYSTEM= function(){}
 		_ROOT_SYSTEM.url_base="/logic/controlador.aspx";
 		
-		function AddCatalogoReveal(uiItem){
-			CrearPantalla("views-control",function(parentNode){
-				VerCatalogo(uiItem.getAttribute("concepto"),parentNode,uiItem.getAttribute("visibles").split(","), function(itemUI,datai){
-					var descripcion= $(itemUI).find("td")[0].innerHTML;
-					var link=GetVal(datai,"link");
-					if(link) $(itemUI).find("td")[0].innerHTML="<a href='" + link + "' target='_blank'>" + descripcion + "</td>";
-				});
-			}); 
-		}
-		
 		$(function(){	
 			Reveal.initialize({history: true,transition: 'slide',width:"100%", height:"100%"});
 			AddCatalogoReveal(document.getElementById("cinicial"));			
@@ -112,6 +102,7 @@
 		
 		div.reveal .slides{text-align:inherit}
 		div.reveal section.present{height:100%;overflow:auto;}
+		.reveal h1{text-transform:none;}
 		
 		.seleccionado{background-color:rgb(#99ddee)}
 		

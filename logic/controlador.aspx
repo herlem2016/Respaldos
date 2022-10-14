@@ -38,17 +38,16 @@
                 case "GenerarOperacionCX_DB": GenerarOperacionCX_DB();break;			
                 case "opx": GenerarOperacionCX_DB();break;			
 				case "Guardar": GuardarObject();break;
+				case "ObtenerItems": ObtenerItems();break;
                 default:{
-						DataSet ds;
-					
+						DataSet ds;					
 						ds=oModelo.GenerarOperacionCX(op, seccion, null, true);
                         if(ds!=null && ds.Tables.Count>0 && ds.Tables[0].Rows.Count > 0 && ds.Tables[0].Columns.Contains("xmldoc")){
                             Response.Write(ds.Tables[0].Rows[0]["xmldoc"]);
                         }else{                            
                             ds.WriteXml(Response.OutputStream);
                         }
-						Notificar(ds);														
-					
+						Notificar(ds);
                     }
                     break;
             }
@@ -121,6 +120,24 @@
 			}														
 			ds.WriteXml(Response.OutputStream);
         }
+    }
+	
+	public void ObtenerItems(){
+        DataSet ds= oModelo.GenerarOperacionCX("ObtenerParametrosRelacionales","generic",null,true);
+        object [,] parametros= null;
+        if(ds!=null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0){
+			parametros= new object[ds.Tables[0].Rows.Count,6];
+			for(int i=0; i<ds.Tables[0].Rows.Count; i++){
+				parametros[i,0]=ds.Tables[0].Rows[i]["leyenda"];
+				parametros[i,1]=ds.Tables[0].Rows[i]["nombre"];
+				parametros[i,2]=Request[ds.Tables[0].Rows[i]["nombre"].ToString()];
+				parametros[i,3]=bool.Parse(ds.Tables[0].Rows[i]["requerido"].ToString());
+				parametros[i,4]=ds.Tables[0].Rows[i]["tipo"].ToString();
+				parametros[i,5]=Int32.Parse(ds.Tables[0].Rows[i]["longitud"].ToString());
+			}			
+        }
+		ds=oModelo.GenerarOperacionCX("ObtenerItems", "generic", parametros,true);
+		Response.Write(ds.Tables[0].Rows[0]["xmldoc"]);
     }
 	
 	public void ProcesarPagoBanco(){

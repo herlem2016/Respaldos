@@ -127,32 +127,8 @@ _ROOT_SYSTEM.ProcesarUnaUnidadUI= function(xmlUnidadUI, data){
 	}	
 	data.componentBase=nuevo_dom;
 	var wrap=$(xmlUnidadUI).children("wrap");		
-	if(wrap.length>0) _ROOT_SYSTEM.ProcesarRepeticionItem(nuevo_dom.children[0],data,xmlUnidadUI);		
-	//Obtenemos las propiedades del TipoUI
-	/*var propiedades=$(unTipoUI).find("propiedad");
-	for(var i=0;i<propiedades.length;i++){
-		$.each($(nuevo_dom).find("[em-id='" + propiedades[i].getAttribute("descripcion") + "']"), function(index,obj){
-			obj.innerHTML=propiedades[i].children[0].getAttribute("valor");
-		});
-	}
+	if(wrap.length>0) _ROOT_SYSTEM.ProcesarRepeticionItem(nuevo_dom.children[0],data,xmlUnidadUI);	
 	
-	if(unTipoUI.getAttribute("es_recargable_db")=="1"){
-		var opx1= xmlUnidadUI.getAttribute("opx_rec_db");	
-		if(opx1){
-			document.head.appendChild(CrearDom("script","var Fn_Repeat_" + unTipoUI.getAttribute("obj_recargable_db") + "_" + opx1 + "=" + (xmlUnidadUI.getAttribute("callback_rec_db")?xmlUnidadUI.getAttribute("callback_rec_db"):"function{}") ));
-			nuevo_dom.append(CrearDom("script","_ROOT_SYSTEM.CargarInfoUnidadUI('" + unTipoUI.getAttribute("obj_recargable_db") + "','" + opx1 + "');"));
-		}
-	}*/
-	
-	/*nuevo_dom.style= GetValAttr(xmlinfo,"evento");
-	var atributos=$(xmlinfo).find(" > atributo");
-	for(var i=0;i<atributos.length;i++){
-		nuevo_dom.setAttribute(GetValAttr(atributos[i],"nombre"),GetValtAtr(atributos[i],"valor"));
-	}
-	var eventos=$(xmlinfo).find(" > eventos");
-	for(var i=0;i<eventos.length;i++){
-		nuevo_dom.addEventListener(GetValAttr(eventos[i],"evento"),GetValAttr(eventos[i],"metodo"));
-	}*/
 	return nuevo_dom;
 }
 
@@ -216,13 +192,19 @@ var row_seleccionado=undefined;
 var item_seleccionado=undefined;
 var nuevo_editar=undefined;//0 Editar, 1 Nuevo;
 
-function VerCatalogo(sobject, contenedor, visibles, callback){
+function VerCatalogo(uiItem, contenedor, callback){
+	console.log("Ver catalogo");
+	var sobject= uiItem.getAttribute("concepto");
+	var visibles= uiItem.getAttribute("visibles").split(",");
 	_conceptoActual=sobject;
 	contenedor= (typeof(contenedor)=="object"?contenedor:document.getElementById(contenedor));
 	item_seleccionado=undefined;
-	ObtenerConsulta(sobject,function (xmlDoc) {
+	var filtros={};if(uiItem.relacion){
+		filtros[uiItem.relacion.getAttribute("campo_ref")]=GetVal(uiItem.formulario.opciones.nodoXml,"indice");
+	}
+	ObtenerConsulta(sobject,filtros,function (xmlDoc) {
 		var titulo= document.createElement("h1");
-		titulo.innerHTML=sobject;
+		titulo.innerHTML= (uiItem.formulario?GetVal(uiItem.formulario.opciones.nodoXml,"descripcion") + " &rarr; ":"") + sobject;
 		contenedor.appendChild(titulo);
 		var headers= $(xmlDoc).find("Response Entidad Campo");
 		$.each(visibles,function(index,campo){
@@ -269,7 +251,7 @@ function VerCatalogo(sobject, contenedor, visibles, callback){
     });	
 }
 
-function MostrarForm(concepto,idForm,nodoXml,es_editar){
+function MostrarForm(concepto,idForm,nodoXml,es_editar, indiceEdit){
 	$.post(_ROOT_SYSTEM.url_base,{op:"ObtenerEstructuraTable",seccion:"generic",sobject: concepto}, function (xmlConcepto) {		
 		var campos= $(xmlConcepto).find("Entidad > Campo");
 		var _form_dom=(typeof(idForm)=="object"? idForm: document.getElementById(idForm));		
@@ -278,6 +260,7 @@ function MostrarForm(concepto,idForm,nodoXml,es_editar){
 			form_dom=CrearDom("form");
 			_form_dom.appendChild(form_dom);
 		}
+		form_dom.opciones={esEdit:es_editar,indiceEdit:indiceEdit,nodoXml:nodoXml};
 		form_dom.innerHTML="";
 		form_dom.style.display="block";
 		var item=ObtenerItemForm("isEdit_","isEdit_","hidden",null,null,es_editar);
@@ -291,15 +274,20 @@ function MostrarForm(concepto,idForm,nodoXml,es_editar){
 		}	
 		
 		$.post(_ROOT_SYSTEM.url_base,{op:"RelacionesEstructuraTable",seccion:"generic",sobject: concepto}, function (xmlRelaciones) {	
-			var campos= $(xmlRelaciones).find("Entidad > Relacion");
+			var relaciones= $(xmlRelaciones).find("Entidad > Relacion");
 			var wrap= document.createElement("div");
 			wrap.className="list-group";
 			form_dom.appendChild(wrap);
-			for(var i=0;i<campos.length;i++){
-				if(!campos[i].aux){
-					item=ObtenerItemForm(campos[i].getAttribute("propiedad"), campos[i].getAttribute("tabla_ref"), campos[i].getAttribute("tipo"),nodoXml,campos[i]);
-					wrap.appendChild(item);
-				}
+			for(var i=0;i<relaciones.length;i++){				
+				item= CrearDom("a");
+				item.className="list-group-item list-group-item-action";
+				item.setAttribute("concepto",relaciones[i].getAttribute("tabla_ref"));
+				item.setAttribute("visibles","indice,descripcion");
+				item.onclick=function(){AddCatalogoReveal(this);}
+				item.innerHTML=relaciones[i].getAttribute("propiedad");
+				item.formulario= form_dom;
+				item.relacion=relaciones[i];
+				wrap.appendChild(item);				
 			}
 		});			
 	});
@@ -310,10 +298,10 @@ function EliminarItem(indice){
 		$.post(_ROOT_SYSTEM.url_base,{op:"Eliminar",seccion:"generic",sobject:_conceptoActual,indice:indice}, function (xmlDoc) {
 			if (GetVal(xmlDoc, "estatus") == 1) {
 				tipo="success";
-				VerCatalogo(row_seleccionado,function(){
+				/*VerCatalogo(row_seleccionado,function(){
 					document.getElementById("contenedorTablas").style.display="block";
 					document.getElementById("forms").style.display="none"; 				
-				});           
+				});*/           
 				frm.reset();            
 			}else{
 				tipo="danger";
@@ -342,10 +330,10 @@ function EditarRegistro(){
 		$.post(url + 'Negocio/controlador.aspx?op=ConsultarItem&seccion=' + estado_edit[row_seleccionado], {idItem:idItem_.idItem}, function (xmlDoc) {
 			if (GetVal(xmlDoc, "estatus") == 1) {
 				tipo="success";
-				VerCatalogo(row_seleccionado,function(){
+				/*VerCatalogo(row_seleccionado,function(){
 					document.getElementById("contenedorTablas").style.display="block";
 					document.getElementById("forms").style.display="none"; 				
-				});           
+				});    */       
 				frm.reset();            
 			}else{
 				tipo="danger";
@@ -457,10 +445,7 @@ function ObtenerItemForm(label,campo,tipo,nodoXml,datos,es_editar){
 				});
 				
 			}break;
-			case "rel": {
-					contenido= '<a class="list-group-item list-group-item-action" concepto="'+ campo + '" visibles="indice,descripcion" onclick="AddCatalogoReveal(this);">' + label + "</a>";
-					itemForm.innerHTML=contenido;
-			}break;			
+				
 		}	
 	}
 	return itemForm;
@@ -501,7 +486,7 @@ function MarcarItem(datai,itemUI, callback,concepto){
 
 var _conceptoActual;
 function ObtenerItems(concepto){
-	ObtenerConsulta(concepto,function(data){
+	ObtenerConsulta(concepto,{},function(data){
 		var lista= $(".list-components")[0];
 		lista.innerHTML="";
 		data=$(data).find("Response Items item");
@@ -521,9 +506,19 @@ function ObtenerItems(concepto){
 	})
 }
 
-function ObtenerConsulta(concepto, callback){
+function AddCatalogoReveal(uiItem){
+	CrearPantalla("views-control",function(parentNode){
+		VerCatalogo(uiItem, parentNode, function(itemUI,datai){
+			var descripcion= $(itemUI).find("td")[0].innerHTML;
+			var link=GetVal(datai,"link");
+			if(link) $(itemUI).find("td")[0].innerHTML="<a href='" + link + "' target='_blank'>" + descripcion + "</td>";
+		});
+	}); 
+}
+
+function ObtenerConsulta(concepto, filtros, callback){
 	_conceptoActual=concepto;
-	$.post("/logic/controlador.aspx",{seccion:"generic",op:"ObtenerItems",concepto:concepto},callback);
+	$.post("/logic/controlador.aspx?seccion=generic&op=ObtenerItems&concepto=" + concepto,filtros,callback);
 }
 
 

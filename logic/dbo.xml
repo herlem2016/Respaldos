@@ -144,6 +144,22 @@
 		</sql>
     </ObtenerNavegacionUI>
 	
+	<ObtenerParametrosRelacionales>
+		<campo leyenda="Concepto" db_nombre="sobject" form_nombre="concepto" requerido="true" charsize="100" tipo="string"/>
+		<sql>
+			<![CDATA[			
+				DECLARE @tEstructura AS TABLE( leyenda NVARCHAR(100),propiedad NVARCHAR(100),tipo NVARCHAR(50),longitud INT, requerido BIT);
+				INSERT INTO @tEstructura 
+				SELECT MRT.referencia leyenda, column_name propiedad, CASE WHEN data_type like '%char' THEN 'string' WHEN data_type like 'bit' THEN 'bool' ELSE data_type END tipo,				
+					ISNULL(CASE WHEN data_type like '%char' AND CHARACTER_MAXIMUM_LENGTH=-1 THEN 8000 ELSE CHARACTER_MAXIMUM_LENGTH END,0) longitud,CONVERT(BIT,CASE WHEN IS_NULLABLE='YES' THEN 0 ELSE 1 END) requerido 
+				FROM (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME=@sobject) Campo
+				INNER JOIN (SELECT * FROM META_Rel_Tablas WHERE destino=@sobject) MRT ON Campo.column_name=MRT.campo_destino;
+					
+				SELECT leyenda, propiedad nombre,propiedad nombre_db,CONVERT(BIT,1) requerido,tipo,longitud FROM @tEstructura;		
+			  ]]>
+		</sql>
+    </ObtenerParametrosRelacionales>
+	
 	<ObtenerParametrosPre>
 		<campo leyenda="Clave de operación" db_nombre="opx" form_nombre="opx" requerido="true" charsize="100" tipo="string"/>
 		<sql>
@@ -200,8 +216,7 @@
 					FROM sys.foreign_key_columns
 					WHERE OBJECT_NAME(parent_object_id) = @sobject
 				)FK ON FK.campo=campo.COLUMN_NAME
-				WHERE TABLE_NAME=@sobject			
-				
+				WHERE TABLE_NAME=@sobject
 			  ]]>
 		</sql>
 	</EstructuraTable>
