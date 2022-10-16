@@ -66,7 +66,10 @@
 		 function CrearForm(isEdit){
 			var concepto= _conceptoActual;
 			var datai;
-			if(isEdit) datai= item_seleccionado.datai;
+			if(isEdit){ 
+				datai= item_seleccionado.datai;
+				if(_opcionesPre) datai.opcionesPre=_opcionesPre;
+			}
 			CrearPantalla('views-control',function(parentNode){				
 				MostrarForm(concepto,parentNode,datai,isEdit);
 			});

@@ -123,21 +123,39 @@
     }
 	
 	public void ObtenerItems(){
-        DataSet ds= oModelo.GenerarOperacionCX("ObtenerParametrosRelacionales","generic",null,true);
-        object [,] parametros= null;
-        if(ds!=null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0){
-			parametros= new object[ds.Tables[0].Rows.Count,6];
-			for(int i=0; i<ds.Tables[0].Rows.Count; i++){
-				parametros[i,0]=ds.Tables[0].Rows[i]["leyenda"];
-				parametros[i,1]=ds.Tables[0].Rows[i]["nombre"];
-				parametros[i,2]=Request[ds.Tables[0].Rows[i]["nombre"].ToString()];
-				parametros[i,3]=bool.Parse(ds.Tables[0].Rows[i]["requerido"].ToString());
-				parametros[i,4]=ds.Tables[0].Rows[i]["tipo"].ToString();
-				parametros[i,5]=Int32.Parse(ds.Tables[0].Rows[i]["longitud"].ToString());
-			}			
-        }
-		ds=oModelo.GenerarOperacionCX("ObtenerItems", "generic", parametros,true);
-		Response.Write(ds.Tables[0].Rows[0]["xmldoc"]);
+		DataSet dsQuery=oModelo.GenerarOperacionCX("ObtenerItems_query", "generic", null,true);		
+		//dsQuery.WriteXml(Response.OutputStream);
+		if(!dsQuery.Tables[0].Columns.Contains("sql_query")){
+			dsQuery.WriteXml(Response.OutputStream);
+		}else{
+			DataSet ds= oModelo.GenerarOperacionCX("ObtenerParametrosRelacionales","generic",null,true);
+			object [,] parametros= null;
+			int nParams=ds.Tables[0].Rows.Count;
+			parametros= new object[nParams+1,6];
+			if(ds!=null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0){
+				for(int i=0; i<ds.Tables[0].Rows.Count; i++){
+					parametros[i,0]=ds.Tables[0].Rows[i]["leyenda"];
+					parametros[i,1]=ds.Tables[0].Rows[i]["leyenda"];
+					parametros[i,2]=Request[ds.Tables[0].Rows[i]["leyenda"].ToString()];
+					parametros[i,3]=bool.Parse(ds.Tables[0].Rows[i]["requerido"].ToString());
+					parametros[i,4]=ds.Tables[0].Rows[i]["tipo"].ToString();
+					parametros[i,5]=Int32.Parse(ds.Tables[0].Rows[i]["longitud"].ToString());
+				}		
+			}
+			parametros[nParams,0]="sql_query";
+			parametros[nParams,1]="sql_query";
+			parametros[nParams,2]=dsQuery.Tables[0].Rows[0]["sql_query"];
+			parametros[nParams,3]=true;
+			parametros[nParams,4]="string";
+			parametros[nParams,5]=8000;			
+			
+			ds=oModelo.GenerarOperacionCX("ObtenerItems", "generic", parametros,true);
+			if(ds!=null && ds.Tables.Count>0 && ds.Tables[0].Rows.Count > 0 && ds.Tables[0].Columns.Contains("xmldoc")){
+				Response.Write(ds.Tables[0].Rows[0]["xmldoc"]);
+			}else{                            
+				ds.WriteXml(Response.OutputStream);
+			}
+		}
     }
 	
 	public void ProcesarPagoBanco(){

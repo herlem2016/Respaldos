@@ -55,41 +55,58 @@
         <![CDATA[
 			SET @sobject=@concepto;
 			@@subquery=[EstructuraTable];			
+			
+			DECLARE @XmlData XML;
+			SET @XmlData = (
+				SELECT gindex '@gindex',propiedad '@propiedad', tipo '@tipo', longitud '@longitud', requerido '@requerido', tabla_ref '@tabla_ref',campo_ref '@campo_ref'
+				FROM @tEstructura
+				FOR XML PATH('Campo'), ROOT('Entidad')
+			);
+			DECLARE @XmlData_E XML;
+			SET @XmlData_E=(@@replace[sql_query]);
+			
+			DECLARE @XmlDataResp XML;
+			SET @XmlDataResp = (
+				SELECT @XmlData,@XmlData_E 				
+				FOR XML PATH('Response')
+			);
+			SELECT @XmlDataResp AS xmldoc;
+			--SELECT @sql_query query;
+          ]]>
+      </sql>
+	</ObtenerItems>	
+	
+	<ObtenerItems_query>
+		<campo leyenda="Concepto" db_nombre="concepto" form_nombre="concepto" requerido="true" charsize="100" tipo="string"/>
+		<campo leyenda="Nombre de Objeto" db_nombre="sobject" form_nombre="sobject" requerido="false" charsize="100" tipo="string"/>
+		<sql>
+        <![CDATA[
+			SET @sobject=@concepto;
+			@@subquery=[EstructuraTable];			
 			DECLARE @query NVARCHAR(MAX);
-			SELECT @query= N'SET @XmlData_E= (SELECT ' + 
+			SELECT @query= N'SELECT ' + 
 				STUFF((SELECT  
-					',@@replace[concepto].[' + propiedad + ']' AS [text()]
+					',Q.[' + propiedad + ']' AS [text()]
 					FROM @tEstructura                        
 					FOR XML PATH('')
 				), 1, 1, '')
 				+ 
-				' FROM ' + @concepto + 
-				(SELECT CASE WHEN campo_ref IS NOT NULL THEN ' LEFT OUTER JOIN ' + tabla_ref + ' ' + tabla_ref + '_' + CONVERT(NVARCHAR(20),gindex) + ' ON ' + tabla_ref + '_' + CONVERT(NVARCHAR(20),gindex) + '.' + campo_ref + '=' + @concepto + '.' + propiedad ELSE '' END AS [text()]
+				' FROM (SELECT * FROM ' + @concepto + 					
+					ISNULL(' WHERE ' + STUFF((SELECT ' AND (@' + propiedad + ' IS NOT NULL AND ' + campo_ref + '=@' + propiedad + ' OR @' + propiedad + ' IS NULL)' AS [text()]
+						FROM @tEstructura WHERE campo_ref IS NOT NULL           
+						FOR XML PATH('')
+					), 1, 4, ''),'')+
+				')Q' +  
+				(SELECT CASE WHEN campo_ref IS NOT NULL THEN ' LEFT OUTER JOIN ' + tabla_ref + ' ' + tabla_ref + '_' + CONVERT(NVARCHAR(20),gindex) + ' ON ' + tabla_ref + '_' + CONVERT(NVARCHAR(20),gindex) + '.' + campo_ref + '=Q.' + propiedad ELSE '' END AS [text()]
 					FROM @tEstructura                    
 					FOR XML PATH('')
 				)
-				+ ' FOR XML PATH(''item''), ROOT(''Items''))';
+				+ ' FOR XML PATH(''item''), ROOT(''Items'')';
 			
-				DECLARE @XmlData XML;
-				SET @XmlData = (
-					SELECT gindex '@gindex',propiedad '@propiedad', tipo '@tipo', longitud '@longitud', requerido '@requerido', tabla_ref '@tabla_ref',campo_ref '@campo_ref'
-					FROM @tEstructura
-					FOR XML PATH('Campo'), ROOT('Entidad')
-				);
-				--SELECT @query;
-				DECLARE @XmlData_E XML;
-				EXEC sp_executesql @query, N'@XmlData_E XML OUTPUT', @XmlData_E=@XmlData_E OUTPUT;--Se utiliza output ya que es la unica forma de extraer un resultado de cualquier tipo, no solo int.
-				
-				DECLARE @XmlDataResp XML;
-				SET @XmlDataResp = (
-					SELECT @XmlData,@XmlData_E 				
-					FOR XML PATH('Response')
-				);
-				SELECT @XmlDataResp AS xmldoc;
-			
+				SELECT @query sql_query;	
           ]]>
       </sql>
-	</ObtenerItems>	
+	</ObtenerItems_query>	
 	
 	<Guardar>
 		<campo leyenda="Object" db_nombre="sobject" form_nombre="sobject" requerido="true" charsize="100" tipo="string"/>
@@ -150,7 +167,7 @@
 			<![CDATA[			
 				DECLARE @tEstructura AS TABLE( leyenda NVARCHAR(100),propiedad NVARCHAR(100),tipo NVARCHAR(50),longitud INT, requerido BIT);
 				INSERT INTO @tEstructura 
-				SELECT MRT.referencia leyenda, column_name propiedad, CASE WHEN data_type like '%char' THEN 'string' WHEN data_type like 'bit' THEN 'bool' ELSE data_type END tipo,				
+				SELECT MRT.campo_destino leyenda, column_name propiedad, CASE WHEN data_type like '%char' THEN 'string' WHEN data_type like 'bit' THEN 'bool' ELSE data_type END tipo,				
 					ISNULL(CASE WHEN data_type like '%char' AND CHARACTER_MAXIMUM_LENGTH=-1 THEN 8000 ELSE CHARACTER_MAXIMUM_LENGTH END,0) longitud,CONVERT(BIT,CASE WHEN IS_NULLABLE='YES' THEN 0 ELSE 1 END) requerido 
 				FROM (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME=@sobject) Campo
 				INNER JOIN (SELECT * FROM META_Rel_Tablas WHERE destino=@sobject) MRT ON Campo.column_name=MRT.campo_destino;

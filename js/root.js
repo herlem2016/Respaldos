@@ -191,6 +191,7 @@ function CrearPantalla(contenedor,callback){
 var row_seleccionado=undefined;
 var item_seleccionado=undefined;
 var nuevo_editar=undefined;//0 Editar, 1 Nuevo;
+var _opcionesPre=undefined;//0 Editar, 1 Nuevo;
 
 function VerCatalogo(uiItem, contenedor, callback){
 	console.log("Ver catalogo");
@@ -198,8 +199,10 @@ function VerCatalogo(uiItem, contenedor, callback){
 	var visibles= uiItem.getAttribute("visibles").split(",");
 	_conceptoActual=sobject;
 	contenedor= (typeof(contenedor)=="object"?contenedor:document.getElementById(contenedor));
+	contenedor.formPre=uiItem.formulario;
 	item_seleccionado=undefined;
 	var filtros={};if(uiItem.relacion){
+		_opcionesPre=uiItem.formulario.opciones;
 		filtros[uiItem.relacion.getAttribute("campo_ref")]=GetVal(uiItem.formulario.opciones.nodoXml,"indice");
 	}
 	ObtenerConsulta(sobject,filtros,function (xmlDoc) {
@@ -267,6 +270,7 @@ function MostrarForm(concepto,idForm,nodoXml,es_editar, indiceEdit){
 		form_dom.appendChild(item);
 		for(var i=0;i<campos.length;i++){
 			if(!campos[i].aux){
+				if(nodoXml.opcionesPre){console.log(nodoXml.opcionesPre);}
 				item=ObtenerItemForm(campos[i].getAttribute("propiedad"), campos[i].getAttribute("propiedad"), campos[i].getAttribute("tipo"),nodoXml,campos[i]);
 				form_dom.appendChild(item);
 				if(item.callback) item.callback();
