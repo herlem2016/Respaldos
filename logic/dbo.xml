@@ -92,8 +92,8 @@
 				), 1, 1, '')
 				+ 
 				' FROM (SELECT * FROM ' + @concepto + 					
-					ISNULL(' WHERE ' + STUFF((SELECT ' AND (@' + propiedad + ' IS NOT NULL AND ' + campo_ref + '=@' + propiedad + ' OR @' + propiedad + ' IS NULL)' AS [text()]
-						FROM @tEstructura WHERE campo_ref IS NOT NULL           
+					ISNULL(' WHERE ' + STUFF((SELECT ' AND (@' + campo_destino + ' IS NOT NULL AND ' + campo_destino + '=@' + campo_destino + ' OR @' + campo_destino + ' IS NULL)' AS [text()]
+						FROM META_Rel_Tablas WHERE destino=@concepto          
 						FOR XML PATH('')
 					), 1, 4, ''),'')+
 				')Q' +  

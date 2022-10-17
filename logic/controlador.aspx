@@ -123,8 +123,7 @@
     }
 	
 	public void ObtenerItems(){
-		DataSet dsQuery=oModelo.GenerarOperacionCX("ObtenerItems_query", "generic", null,true);		
-		//dsQuery.WriteXml(Response.OutputStream);
+		DataSet dsQuery=oModelo.GenerarOperacionCX("ObtenerItems_query", "generic", null,true);	
 		if(!dsQuery.Tables[0].Columns.Contains("sql_query")){
 			dsQuery.WriteXml(Response.OutputStream);
 		}else{
@@ -147,8 +146,7 @@
 			parametros[nParams,2]=dsQuery.Tables[0].Rows[0]["sql_query"];
 			parametros[nParams,3]=true;
 			parametros[nParams,4]="string";
-			parametros[nParams,5]=8000;			
-			
+			parametros[nParams,5]=8000;	
 			ds=oModelo.GenerarOperacionCX("ObtenerItems", "generic", parametros,true);
 			if(ds!=null && ds.Tables.Count>0 && ds.Tables[0].Rows.Count > 0 && ds.Tables[0].Columns.Contains("xmldoc")){
 				Response.Write(ds.Tables[0].Rows[0]["xmldoc"]);

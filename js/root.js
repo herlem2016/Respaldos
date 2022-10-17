@@ -423,7 +423,6 @@ function ObtenerItemForm(label,campo,tipo,nodoXml,datos,es_editar,opciones){
 				var filtros={};
 				if(datos.filtros) eval('filtros=' + datos.filtros + '();');
 				$.post(_ROOT_SYSTEM.url_base,{op:"ObtenerItems",seccion:"generic",concepto: table_ref}, function (xmlDoc) {	
-				//$.post(datos.url,filtros, function(xmlDoc) {
 					var items= $(xmlDoc).find("Response Items item");
 					contenido= document.createElement("select");
 					contenido.innerHTML="<option>Seleccione opción</option>";
