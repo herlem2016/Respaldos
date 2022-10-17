@@ -284,7 +284,7 @@ function MostrarForm(concepto,idForm,nodoXml,es_editar, indiceEdit){
 				item= CrearDom("a");
 				item.className="list-group-item list-group-item-action";
 				item.setAttribute("concepto",relaciones[i].getAttribute("tabla_ref"));
-				item.setAttribute("visibles","indice,leyenda");
+				item.setAttribute("visibles","indice,leyenda,descripcion");
 				item.onclick=function(){AddCatalogoReveal(this);}
 				item.innerHTML=relaciones[i].getAttribute("propiedad");
 				item.formulario= form_dom;
