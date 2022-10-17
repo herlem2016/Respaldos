@@ -202,6 +202,7 @@ function VerCatalogo(uiItem, contenedor, callback){
 	contenedor.formPre=uiItem.formulario;
 	item_seleccionado=undefined;
 	var filtros={};if(uiItem.relacion){
+		uiItem.formulario.opciones.relacion=uiItem.relacion;
 		_opcionesPre=uiItem.formulario.opciones;
 		filtros[uiItem.relacion.getAttribute("campo_ref")]=GetVal(uiItem.formulario.opciones.nodoXml,"indice");
 	}
@@ -268,13 +269,10 @@ function MostrarForm(concepto,idForm,nodoXml,es_editar, indiceEdit){
 		form_dom.style.display="block";
 		var item=ObtenerItemForm("isEdit_","isEdit_","hidden",null,null,es_editar);
 		form_dom.appendChild(item);
-		for(var i=0;i<campos.length;i++){
-			if(!campos[i].aux){
-				if(nodoXml.opcionesPre){console.log(nodoXml.opcionesPre);}
-				item=ObtenerItemForm(campos[i].getAttribute("propiedad"), campos[i].getAttribute("propiedad"), campos[i].getAttribute("tipo"),nodoXml,campos[i]);
-				form_dom.appendChild(item);
-				if(item.callback) item.callback();
-			}
+		for(var i=0;i<campos.length;i++){			
+			item=ObtenerItemForm(campos[i].getAttribute("propiedad"), campos[i].getAttribute("propiedad"), campos[i].getAttribute("tipo"),nodoXml,campos[i]);
+			form_dom.appendChild(item);
+			if(item.callback) item.callback();
 		}	
 		
 		$.post(_ROOT_SYSTEM.url_base,{op:"RelacionesEstructuraTable",seccion:"generic",sobject: concepto}, function (xmlRelaciones) {	
@@ -286,7 +284,7 @@ function MostrarForm(concepto,idForm,nodoXml,es_editar, indiceEdit){
 				item= CrearDom("a");
 				item.className="list-group-item list-group-item-action";
 				item.setAttribute("concepto",relaciones[i].getAttribute("tabla_ref"));
-				item.setAttribute("visibles","indice,descripcion");
+				item.setAttribute("visibles","indice,leyenda");
 				item.onclick=function(){AddCatalogoReveal(this);}
 				item.innerHTML=relaciones[i].getAttribute("propiedad");
 				item.formulario= form_dom;
@@ -371,7 +369,7 @@ function Guardar(frm,concepto,callback){
 	});
 }
 
-function ObtenerItemForm(label,campo,tipo,nodoXml,datos,es_editar){
+function ObtenerItemForm(label,campo,tipo,nodoXml,datos,es_editar,opciones){
 	var table_ref=datos?datos.getAttribute("tabla_ref"):null;
 	var campo_ref;	
 	var oTipo=ObtenerTipo(campo, tipo, table_ref);
@@ -433,11 +431,17 @@ function ObtenerItemForm(label,campo,tipo,nodoXml,datos,es_editar){
 					contenido.className="form-control";
 					contenido.name=campo;
 					var item;
+					console.log("Antes for select");
 					for(var i=0;i<items.length;i++){
 						item=document.createElement("option");
 						item.innerHTML=GetVal(items[i],"descripcion");
 						item.value=GetVal(items[i],datos.getAttribute("campo_ref"));
 						if(GetVal(nodoXml,campo)==item.value){ 
+							item.setAttribute("selected","selected");
+						}
+						if(_opcionesPre){console.log("XML pre:" + campo + "<->"+ _opcionesPre.relacion.getAttribute("campo_ref"));}
+						if(!es_editar && _opcionesPre && _opcionesPre.relacion.getAttribute("campo_ref")==campo && item.value==GetVal(_opcionesPre.nodoXml,_opcionesPre.relacion.getAttribute("campo_origen"))){
+							console.log("Set Opciones Pre");
 							item.setAttribute("selected","selected");
 						}
 						contenido.appendChild(item);					
