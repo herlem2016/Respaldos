@@ -33,11 +33,11 @@
 	<style>
 		html,body{height:100%;margin:0px;}
 		body.*{font-family:Roboto Verdana;color:#444;}
-		div.reveal .slides{text-align:inherit}
+		div.reveal .slides{text-align:inherit;width:100% !important;height:100% !important;}
 		div.reveal section.present{height:100%;overflow:auto;}
 	</style>
 </head>
 <body vista="1" url="/logic/controlador.aspx" contenedor="views-control">
-	<div class="reveal"><div class="slides" id="views-control"><section></section></div></div>
+	<div class="reveal"><div class="slides" id="views-control" style="margin:0px;"><section></section></div></div>
 </body>
 </html>
